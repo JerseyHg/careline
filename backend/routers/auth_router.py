@@ -1,5 +1,6 @@
 """
 Auth Router: 注册 / 登录 / 微信登录
+修复：登录时如果用户不存在则自动注册
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -22,15 +23,14 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
     """手机号注册（开发/测试用）"""
     existing = db.query(User).filter(User.phone == req.phone).first()
     if existing:
-        raise HTTPException(status_code=400, detail="该手机号已注册")
+        raise HTTPException(status_code=400, detail="该账号已注册")
 
     user = User(
         phone=req.phone,
         nickname=req.nickname or f"用户{req.phone[-4:]}",
         openid=None,
     )
-    # Store hashed password in a simple way (V1)
-    user.avatar_url = hash_password(req.password)  # reusing field for simplicity
+    user.avatar_url = hash_password(req.password)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -45,10 +45,28 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(req: PhoneLoginRequest, db: Session = Depends(get_db)):
-    """手机号密码登录"""
+    """
+    登录（首次自动注册）
+    - 用户存在 → 验证密码
+    - 用户不存在 → 自动创建账号
+    """
     user = db.query(User).filter(User.phone == req.phone).first()
-    if not user or not verify_password(req.password, user.avatar_url or ""):
-        raise HTTPException(status_code=401, detail="手机号或密码错误")
+
+    if user:
+        # 已有账号，验证密码
+        if not verify_password(req.password, user.avatar_url or ""):
+            raise HTTPException(status_code=401, detail="密码错误")
+    else:
+        # 首次登录，自动注册
+        user = User(
+            phone=req.phone,
+            nickname=f"用户{req.phone[-4:] if len(req.phone) >= 4 else req.phone}",
+            openid=None,
+        )
+        user.avatar_url = hash_password(req.password)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     token = create_access_token(user.id)
     return TokenResponse(
@@ -64,10 +82,6 @@ def wechat_login(req: WechatLoginRequest, db: Session = Depends(get_db)):
     微信小程序登录
     V1: 用 code 模拟（实际需调用微信 code2Session 接口换 openid）
     """
-    # TODO: 实际实现需要:
-    # 1. 用 code 调用 https://api.weixin.qq.com/sns/jscode2session 获取 openid
-    # 2. 用 openid 查找或创建用户
-    # 这里用 code 直接当作 openid 的 stub
     openid = f"wx_{req.code}"
 
     user = db.query(User).filter(User.openid == openid).first()
