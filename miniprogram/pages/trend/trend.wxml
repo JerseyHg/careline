@@ -1,8 +1,8 @@
-<!-- pages/trend/trend.wxml -->
+<!-- pages/trend/trend.wxml - 修复版：折线图 + 疗程对比 -->
 <view class="trend-page">
   <view wx:if="{{loading}}" class="loading-center">加载中...</view>
 
-  <!-- 患者：日历视图 -->
+  <!-- ════ 患者：日历视图 ════ -->
   <view wx:elif="{{isPatient}}">
     <view class="cal-header">
       <text class="cal-month">{{calMonth}}</text>
@@ -35,15 +35,75 @@
     </view>
   </view>
 
-  <!-- 家属：趋势数据表 -->
+  <!-- ════ 家属：趋势折线图 ════ -->
   <view wx:else>
-    <view class="card">
-      <text class="section-title">第{{cycleNo}}疗程趋势</text>
+    <!-- 标题 -->
+    <view class="trend-header-row">
+      <view>
+        <text class="trend-title">第{{cycleNo}}疗程趋势</text>
+        <text class="trend-subtitle" wx:if="{{cycleDay > 0}}">Day {{cycleDay}}</text>
+      </view>
+      <view class="compare-toggle" bindtap="toggleCompare">
+        <text class="compare-toggle-text">{{showCompare ? '关闭对比' : '📊 对比'}}</text>
+      </view>
+    </view>
 
-      <view wx:if="{{trendData.length === 0}}" class="empty-hint">暂无数据</view>
+    <!-- 疗程对比选择器 -->
+    <view wx:if="{{showCompare}}" class="compare-selector">
+      <text class="compare-hint">选择对比的疗程：</text>
+      <view class="compare-pills">
+        <view
+          wx:for="{{allCycles}}" wx:key="cycle_no"
+          wx:if="{{item.cycle_no !== cycleNo}}"
+          class="compare-pill {{compareNo === item.cycle_no ? 'active' : ''}}"
+          data-no="{{item.cycle_no}}"
+          bindtap="selectCompareCycle"
+        >
+          <text>第{{item.cycle_no}}疗程</text>
+        </view>
+        <view wx:if="{{allCycles.length <= 1}}" class="compare-empty">
+          <text>暂无其他疗程可对比</text>
+        </view>
+      </view>
+    </view>
 
-      <view wx:else class="trend-table">
-        <view class="trend-row trend-header">
+    <!-- 指标切换 -->
+    <view class="metric-tabs">
+      <view
+        wx:for="{{metrics}}" wx:key="id"
+        class="metric-tab {{activeMetric === item.id ? 'active' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="switchMetric"
+        style="{{activeMetric === item.id ? '--tab-color: ' + item.color : ''}}"
+      >
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+
+    <!-- 折线图 Canvas -->
+    <view class="card chart-card">
+      <view wx:if="{{trendData.length === 0}}" class="empty-hint">暂无数据，开始记录后会显示趋势图</view>
+      <view wx:else class="chart-wrapper">
+        <canvas type="2d" id="trendCanvas" class="trend-canvas"></canvas>
+        <!-- 图例 -->
+        <view class="chart-legend" wx:if="{{compareNo > 0}}">
+          <view class="legend-line">
+            <view class="legend-line-solid" style="background: {{metrics[0].color}};"></view>
+            <text>第{{cycleNo}}疗程（当前）</text>
+          </view>
+          <view class="legend-line">
+            <view class="legend-line-dashed"></view>
+            <text>第{{compareNo}}疗程</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 数据表格（补充） -->
+    <view class="card" wx:if="{{trendData.length > 0}}">
+      <text class="section-title">📋 数据明细</text>
+      <view class="trend-table">
+        <view class="trend-row trend-table-header">
           <text class="trend-cell">Day</text>
           <text class="trend-cell">体力</text>
           <text class="trend-cell">恶心</text>
@@ -52,14 +112,8 @@
         </view>
         <view wx:for="{{trendData}}" wx:key="cycle_day" class="trend-row">
           <text class="trend-cell day-cell">D{{item.cycle_day}}</text>
-          <text class="trend-cell">
-            <text class="bar" style="width: {{item.energy ? (item.energy * 25) : 0}}%; background: #5B7FE8;"></text>
-            {{item.energy != null ? item.energy : '-'}}
-          </text>
-          <text class="trend-cell">
-            <text class="bar" style="width: {{item.nausea ? (item.nausea * 33) : 0}}%; background: #E8A85B;"></text>
-            {{item.nausea != null ? item.nausea : '-'}}
-          </text>
+          <text class="trend-cell">{{item.energy != null ? item.energy : '-'}}</text>
+          <text class="trend-cell">{{item.nausea != null ? item.nausea : '-'}}</text>
           <text class="trend-cell">{{item.stool_count != null ? item.stool_count : '-'}}</text>
           <text class="trend-cell {{item.fever ? 'danger' : ''}}">{{item.fever ? '🌡️' : '—'}}</text>
         </view>

@@ -1,4 +1,4 @@
-<!-- pages/home/home.wxml -->
+<!-- pages/home/home.wxml - 修复版：移除留言，优化措辞 -->
 <view class="home-page {{isPatient ? 'patient-theme' : 'caregiver-theme'}}">
   <view wx:if="{{loading}}" class="loading-center">加载中...</view>
 
@@ -23,8 +23,8 @@
 
       <view wx:if="{{!hasRecorded}}" class="action-btns">
         <button class="btn-primary" bindtap="goRecord">📝 开始记录</button>
-        <button class="btn-tough" bindtap="goToughDay" wx:if="{{isPatient}}">
-          😞 今天很难受
+        <button class="btn-quick" bindtap="goQuickRecord" wx:if="{{isPatient}}">
+          ⚡ 快速记录（只填体温）
         </button>
       </view>
 
@@ -72,13 +72,6 @@
       </view>
     </view>
 
-    <!-- 家人留言 -->
-    <view class="card message-card" wx:if="{{messages.length > 0}}">
-      <text class="section-title">💌 家人的话</text>
-      <view class="message-item" wx:for="{{messages}}" wx:key="id">
-        <text class="message-content">{{item.content}}</text>
-        <text class="message-from">—— {{item.sender_name}}</text>
-      </view>
-    </view>
+    <!-- 留言板暂时不显示，V2再做 -->
   </view>
 </view>

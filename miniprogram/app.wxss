@@ -1,49 +1,75 @@
-/* app.wxss - 全局样式 */
+/* app.wxss - 全局样式 (修复版) */
 
 /* ─── 基础变量 ─── */
 page {
-  --primary: #5B7FE8;
-  --primary-light: #E8EEFF;
-  --patient-bg: #FFF9F5;
-  --patient-accent: #D4956A;
-  --patient-text: #5A3A28;
-  --caregiver-bg: #F4F7FE;
-  --caregiver-accent: #5B7FE8;
-  --caregiver-text: #1A2A3A;
-  --text: #333;
-  --text-light: #999;
-  --border: #EAEAEA;
-  --danger: #E05050;
-  --success: #4CAF50;
-  --card-radius: 20rpx;
+  --primary: #6366F1;
+  --primary-dark: #4F46E5;
+  --primary-light: #EEF2FF;
+  --primary-glow: rgba(99, 102, 241, 0.15);
 
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --patient-bg: linear-gradient(180deg, #FFF7ED 0%, #FFF1E6 30%, #F9F4EF 100%);
+  --patient-accent: #EA8B55;
+  --patient-accent-dark: #D97545;
+  --patient-text: #5A3A28;
+
+  --caregiver-bg: linear-gradient(180deg, #EFF6FF 0%, #E8F0FE 30%, #F0F4FA 100%);
+  --caregiver-accent: #6366F1;
+  --caregiver-text: #1E293B;
+
+  --text: #1E293B;
+  --text-secondary: #64748B;
+  --text-light: #94A3B8;
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --danger: #EF4444;
+  --danger-light: #FEF2F2;
+  --success: #10B981;
+  --success-light: #ECFDF5;
+  --warning: #F59E0B;
+  --warning-light: #FFFBEB;
+  --card-radius: 24rpx;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'SF Pro Display', 'Helvetica Neue', sans-serif;
   font-size: 28rpx;
   color: var(--text);
-  background-color: #F6F7FB;
+  background-color: #F8FAFC;
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── 通用卡片 ─── */
 .card {
-  background: #fff;
+  background: #FFFFFF;
   border-radius: var(--card-radius);
   padding: 32rpx;
   margin-bottom: 24rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.04),
+              0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+  border: 1rpx solid rgba(0, 0, 0, 0.03);
 }
 
-/* ─── 按钮 ─── */
+/* ─── 按钮（关键修复：居中） ─── */
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #fff;
   border: none;
   border-radius: 28rpx;
-  padding: 24rpx 0;
+  padding: 0;
+  height: 92rpx;
+  line-height: 92rpx;
   font-size: 30rpx;
   font-weight: 600;
   width: 100%;
   text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(99, 102, 241, 0.3);
+  letter-spacing: 1rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
 }
 
 .btn-primary::after {
@@ -51,15 +77,26 @@ page {
 }
 
 .btn-outline {
-  background: #fff;
-  color: var(--text-light);
+  background: #FFFFFF;
+  color: var(--text-secondary);
   border: 2rpx solid var(--border);
   border-radius: 28rpx;
-  padding: 24rpx 0;
+  padding: 0;
+  height: 88rpx;
+  line-height: 88rpx;
   font-size: 30rpx;
   font-weight: 500;
   width: 100%;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-outline:active {
+  background: #F8FAFC;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-outline::after {
@@ -69,21 +106,23 @@ page {
 /* ─── 评分选项 ─── */
 .score-row {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
   flex-wrap: wrap;
 }
 
 .score-item {
   flex: 1;
-  min-width: 120rpx;
-  padding: 20rpx 8rpx;
-  border-radius: 16rpx;
+  min-width: 130rpx;
+  padding: 22rpx 10rpx;
+  border-radius: 20rpx;
   border: 2rpx solid var(--border);
   text-align: center;
   font-size: 24rpx;
   color: var(--text-light);
-  background: #fff;
-  transition: all 0.2s;
+  background: #FAFBFC;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .score-item.active {
@@ -91,6 +130,16 @@ page {
   background: var(--primary-light);
   color: var(--primary);
   font-weight: 600;
+  box-shadow: 0 2rpx 8rpx var(--primary-glow);
+  transform: translateY(-2rpx);
+}
+
+.score-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4rpx;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
 }
 
 /* ─── 区块标题 ─── */
@@ -99,6 +148,7 @@ page {
   font-weight: 700;
   color: var(--text);
   margin-bottom: 20rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .section-label {
@@ -110,16 +160,17 @@ page {
 /* ─── 分隔线 ─── */
 .divider {
   height: 1rpx;
-  background: var(--border);
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
   margin: 28rpx 0;
 }
 
 /* ─── 加载 ─── */
 .loading-center {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 120rpx 0;
+  padding: 160rpx 0;
   color: var(--text-light);
   font-size: 28rpx;
 }
@@ -129,15 +180,174 @@ page {
   position: fixed;
   right: 40rpx;
   bottom: 200rpx;
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 56rpx;
-  background: var(--primary);
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: linear-gradient(135deg, var(--primary) 0%, #818CF8 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(91, 127, 232, 0.4);
+  box-shadow: 0 8rpx 32rpx rgba(99, 102, 241, 0.4),
+              0 2rpx 8rpx rgba(99, 102, 241, 0.2);
   z-index: 100;
-  font-size: 48rpx;
+  font-size: 52rpx;
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
+
+/* ─── 开关组件 ─── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid var(--border-light);
+}
+
+.toggle-row:last-child { border: none; }
+
+.toggle-label {
+  font-size: 28rpx;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.toggle-switch {
+  width: 96rpx;
+  height: 52rpx;
+  border-radius: 26rpx;
+  background: #E2E8F0;
+  position: relative;
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-switch.on {
+  background: linear-gradient(135deg, var(--primary), #818CF8);
+}
+
+.toggle-dot {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 22rpx;
+  background: #fff;
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
+}
+
+.toggle-switch.on .toggle-dot {
+  transform: translateX(44rpx);
+}
+
+/* ─── 输入框 ─── */
+.input-field {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+  background: #FAFBFC;
+  transition: all 0.2s ease;
+  color: var(--text);
+  line-height: 88rpx;
+}
+
+.input-field:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4rpx var(--primary-glow);
+}
+
+/* ─── 步进器 ─── */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48rpx;
+}
+
+.stepper-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  font-weight: 700;
+  box-shadow: 0 2rpx 8rpx var(--primary-glow);
+}
+
+.stepper-btn:active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.stepper-value {
+  font-size: 56rpx;
+  font-weight: 800;
+  color: var(--text);
+  min-width: 80rpx;
+  text-align: center;
+}
+
+/* ─── 备注/体温 ─── */
+.note-textarea {
+  width: 100%;
+  min-height: 120rpx;
+  padding: 20rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  background: #FAFBFC;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.temp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 0;
+}
+
+.temp-label {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.temp-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  background: #FAFBFC;
+  color: var(--danger);
+}
+
+/* ─── 保存区域 ─── */
+.save-area {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -2rpx 20rpx rgba(0, 0, 0, 0.05);
+  z-index: 50;
 }

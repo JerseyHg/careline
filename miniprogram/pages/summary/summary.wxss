@@ -1,21 +1,90 @@
-/* pages/summary/summary.wxss */
-.summary-page { padding: 24rpx 24rpx 120rpx; }
+/* pages/summary/summary.wxss - 美化版 */
+.summary-page {
+  padding: 24rpx 24rpx 140rpx;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  min-height: 100vh;
+}
 
-.stats-card { padding: 32rpx; }
-.stats-grid { display: flex; flex-wrap: wrap; gap: 16rpx; margin-top: 16rpx; }
+.stats-card {
+  padding: 36rpx;
+  border-radius: 28rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #6366F1, #818CF8, #A78BFA);
+}
+
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
 .stat-item {
-  flex: 1; min-width: 40%; text-align: center; padding: 20rpx;
-  background: #F8FAFF; border-radius: 16rpx;
+  flex: 1;
+  min-width: 40%;
+  text-align: center;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #FAFBFF, #EEF2FF);
+  border-radius: 20rpx;
+  border: 1rpx solid #E0E7FF;
+  transition: all 0.2s ease;
 }
-.stat-value { display: block; font-size: 36rpx; font-weight: 700; color: var(--primary); }
-.stat-label { display: block; font-size: 22rpx; color: #999; margin-top: 4rpx; }
-.stat-day { display: block; font-size: 20rpx; color: #BBB; }
 
-.text-card { padding: 32rpx; }
+.stat-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.stat-label {
+  display: block;
+  font-size: 22rpx;
+  color: #64748B;
+  margin-top: 6rpx;
+  font-weight: 600;
+}
+
+.stat-day {
+  display: block;
+  font-size: 20rpx;
+  color: #94A3B8;
+  margin-top: 4rpx;
+}
+
+.text-card {
+  padding: 36rpx;
+  border-radius: 28rpx;
+}
+
 .summary-text {
-  display: block; font-size: 28rpx; color: #333; line-height: 1.8;
-  white-space: pre-wrap; word-break: break-all;
+  display: block;
+  font-size: 28rpx;
+  color: #334155;
+  line-height: 2;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
-.btn-row { display: flex; flex-direction: column; gap: 16rpx; margin-top: 24rpx; }
-.share-btn { margin-top: 0 !important; }
+.btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.share-btn {
+  margin-top: 0 !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}

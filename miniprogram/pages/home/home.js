@@ -1,4 +1,4 @@
-// pages/home/home.js
+// pages/home/home.js - 修复版：移除留言，滚动到顶部
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -14,7 +14,6 @@ Page({
     hasRecorded: false,
     statusEmoji: '📝',
     statusText: '还没记录哦',
-    messages: [],
     loading: true
   },
 
@@ -33,6 +32,7 @@ Page({
   },
 
   onShow: function () {
+    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
     this._loadData();
   },
 
@@ -42,18 +42,22 @@ Page({
 
     Promise.all([
       api.getCurrentCycle().catch(function () { return null; }),
-      api.getToday().catch(function () { return null; }),
-      api.getActiveMessages().catch(function () { return []; })
+      api.getToday().catch(function () { return null; })
     ]).then(function (results) {
       var cycle = results[0];
       var todayLog = results[1];
-      var messages = results[2];
 
       var cycleNo = 0, cycleDay = 0, cycleDayLabel = '';
       if (cycle) {
         cycleNo = cycle.cycle_no;
         cycleDay = cycle.current_day || 0;
-        if (cycleDay >= 3 && cycleDay <= 7) {
+
+        // 如果超出疗程天数，提醒
+        if (cycleDay > (cycle.length_days || 21)) {
+          cycleDayLabel = that.data.isPatient
+            ? '这个疗程周期结束啦，记得让家属创建新疗程哦'
+            : '⏰ 当前疗程已超期，请创建新疗程';
+        } else if (cycleDay >= 3 && cycleDay <= 7) {
           cycleDayLabel = that.data.isPatient ? '身体可能会有些反应，注意休息' : '⚠️ 副作用高峰期';
         } else if (cycleDay > 7) {
           cycleDayLabel = that.data.isPatient ? '最难的几天快过去了' : '副作用窗口已过';
@@ -79,7 +83,6 @@ Page({
         cycleNo: cycleNo, cycleDay: cycleDay, cycleDayLabel: cycleDayLabel,
         todayLog: todayLog, hasRecorded: hasRecorded,
         statusEmoji: statusEmoji, statusText: statusText,
-        messages: messages || [],
         loading: false
       });
     }).catch(function () {
@@ -88,7 +91,7 @@ Page({
   },
 
   goRecord: function () { wx.switchTab({ url: '/pages/record/record' }); },
-  goToughDay: function () { wx.navigateTo({ url: '/pages/record/record?tough=1' }); },
+  goQuickRecord: function () { wx.navigateTo({ url: '/pages/record/record?tough=1' }); },
   goStool: function () { wx.navigateTo({ url: '/pages/stool/stool' }); },
   goSummary: function () { wx.navigateTo({ url: '/pages/summary/summary' }); }
 });

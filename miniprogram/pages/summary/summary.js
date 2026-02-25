@@ -1,4 +1,4 @@
-// pages/summary/summary.js
+// pages/summary/summary.js - 修复版
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -8,6 +8,9 @@ Page({
     loading: true,
     summaryText: '',
     keyStats: null,
+    cycleNo: 0,
+    cycleDay: 0,
+    lengthDays: 21,
     mode: 'caregiver'
   },
 
@@ -17,6 +20,10 @@ Page({
     this._loadSummary();
   },
 
+  onShow: function () {
+    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
+  },
+
   _loadSummary: function () {
     var that = this;
     that.setData({ loading: true });
@@ -24,6 +31,9 @@ Page({
       that.setData({
         summaryText: res.summary_text || '暂无数据',
         keyStats: res.key_stats || null,
+        cycleNo: res.cycle_no || 0,
+        cycleDay: res.cycle_day || 0,
+        lengthDays: res.length_days || 21,
         loading: false
       });
     }).catch(function (err) {
@@ -37,16 +47,13 @@ Page({
   onCopy: function () {
     wx.setClipboardData({
       data: this.data.summaryText,
-      success: function () {
-        wx.showToast({ title: '已复制', icon: 'success' });
-      }
+      success: function () { wx.showToast({ title: '已复制', icon: 'success' }); }
     });
   },
 
   onShareAppMessage: function () {
-    var ks = this.data.keyStats;
     return {
-      title: '化疗记录摘要 - 第' + (ks && ks.cycle_no ? ks.cycle_no : '?') + '疗程',
+      title: '化疗记录摘要 - 第' + (this.data.cycleNo || '?') + '疗程',
       path: '/pages/home/home'
     };
   }

@@ -1,1 +1,4 @@
-{ "navigationBarTitleText": "数据" }
+{
+  "navigationBarTitleText": "数据趋势",
+  "disableScroll": false
+}

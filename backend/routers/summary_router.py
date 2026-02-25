@@ -1,5 +1,6 @@
 """
 Summary Router: 趋势 + 就诊摘要 + 患者日历
+修复版：cycle_day 超过 length_days 时标注「已超期」
 """
 from datetime import date, timedelta
 from typing import List, Optional
@@ -34,7 +35,7 @@ def _compute_key_stats(logs: List[DailyLog], recent_days: int = 7) -> KeyStats:
 
     energy_logs = [(l.energy, l.cycle_day, l.date) for l in logs if l.energy is not None]
     if energy_logs:
-        worst_e = max(energy_logs, key=lambda x: x[0])  # higher = worse
+        worst_e = max(energy_logs, key=lambda x: x[0])
         stats.min_energy = worst_e[0]
         stats.min_energy_day = worst_e[1]
 
@@ -115,75 +116,96 @@ def _generate_caregiver_summary(
     cycle: ChemoCycle, cycle_day: int, stats: KeyStats,
 ) -> str:
     """生成家属模式就诊摘要文本"""
+
+    # 🔧 修复：如果 cycle_day 超过 length_days，说明疗程已超期
+    display_day = cycle_day
+    overdue = False
+    if cycle_day > cycle.length_days:
+        overdue = True
+        display_day = cycle_day
+
     lines = [
         "【化疗副作用记录 · 就诊摘要】",
-        f"当前：第{cycle.cycle_no}疗程 · Day {cycle_day}（{china_today()}）",
     ]
+
+    if overdue:
+        lines.append(f"当前：第{cycle.cycle_no}疗程 · 已完成（共{cycle.length_days}天，超出{cycle_day - cycle.length_days}天）")
+        lines.append(f"建议：请在「我的」中创建新疗程")
+    else:
+        lines.append(f"当前：第{cycle.cycle_no}疗程 · Day {display_day}/{cycle.length_days}（{china_today()}）")
+
     if cycle.regimen:
         lines.append(f"方案：{cycle.regimen}")
 
     lines.append("")
-    lines.append("━ 本疗程关键指标 ━")
 
-    nausea_level = {0: "无", 1: "轻微", 2: "中度", 3: "重度"}
-    energy_level = {0: "正常", 1: "轻度受限", 2: "中度受限", 3: "重度受限", 4: "卧床"}
-    diarrhea_level = {0: "无", 1: "轻度", 2: "中度", 3: "重度"}
-
+    # Key stats
     if stats.max_nausea is not None:
-        lines.append(f"恶心峰值：{stats.max_nausea}/3（Day {stats.max_nausea_day}）{nausea_level.get(stats.max_nausea, '')}")
+        lines.append(f"▸ 恶心峰值: {stats.max_nausea}/3 (Day {stats.max_nausea_day})")
     if stats.min_energy is not None:
-        lines.append(f"体力最低：{stats.min_energy}/4（Day {stats.min_energy_day}）{energy_level.get(stats.min_energy, '')}")
+        lines.append(f"▸ 体力最差: {stats.min_energy}/4 (Day {stats.min_energy_day})")
     if stats.max_stool is not None:
-        lines.append(f"排便最多：{stats.max_stool}次/天（Day {stats.max_stool_day}）")
+        lines.append(f"▸ 排便最多: {stats.max_stool}次 (Day {stats.max_stool_day})")
     if stats.max_diarrhea is not None:
-        lines.append(f"腹泻峰值：{stats.max_diarrhea}/3（Day {stats.max_diarrhea_day}）{diarrhea_level.get(stats.max_diarrhea, '')}")
+        lines.append(f"▸ 腹泻峰值: {stats.max_diarrhea}/3 (Day {stats.max_diarrhea_day})")
 
-    if stats.blood_events:
-        for be in stats.blood_events:
-            lines.append(f"便血：Day {be['day']} 出现{be['count']}次")
-
+    # Fever
     if stats.fever_events:
         lines.append("")
-        lines.append("━ 发热记录 ━")
+        lines.append(f"⚠️ 发热 {len(stats.fever_events)} 次:")
         for fe in stats.fever_events:
-            warn = " ⚠" if fe["temp"] >= 38.0 else ""
-            lines.append(f"Day {fe['day']}：{fe['temp']}℃{warn}")
+            lines.append(f"  Day {fe['day']}: {fe['temp']}℃")
 
+    # Blood
+    if stats.blood_events:
+        lines.append("")
+        lines.append(f"⚠️ 便血 {len(stats.blood_events)} 次")
+
+    # Averages
     lines.append("")
-    lines.append("━ 近7天汇总 ━")
+    lines.append("近7日均值:")
     if stats.avg_energy_7d is not None:
-        lines.append(f"体力均值：{stats.avg_energy_7d}/4")
+        lines.append(f"  体力 {stats.avg_energy_7d}/4")
     if stats.avg_nausea_7d is not None:
-        lines.append(f"恶心均值：{stats.avg_nausea_7d}/3")
+        lines.append(f"  恶心 {stats.avg_nausea_7d}/3")
     if stats.avg_stool_7d is not None:
-        lines.append(f"排便均值：{stats.avg_stool_7d}次/天")
-    if stats.avg_sleep_7d is not None:
-        lines.append(f"睡眠均值：{stats.avg_sleep_7d}/3")
+        lines.append(f"  排便 {stats.avg_stool_7d}次/天")
 
+    # Worst days
     if stats.worst_days:
         lines.append("")
-        lines.append("━ 最难受3天 ━")
-        for wd in stats.worst_days:
-            reasons_str = " + ".join(wd["reasons"]) if wd["reasons"] else "综合"
-            lines.append(f"Day {wd['day']}（{reasons_str}）")
+        lines.append("最辛苦的几天:")
+        for wd in stats.worst_days[:3]:
+            reasons = ", ".join(wd.get("reasons", []))
+            if reasons:
+                lines.append(f"  Day {wd['day']}: {reasons}")
+
+    lines.append("")
+    lines.append(f"——— CareLine 自动生成 · {china_today()} ———")
 
     return "\n".join(lines)
 
 
-def _generate_patient_summary(cycle: ChemoCycle, cycle_day: int, stats: KeyStats) -> str:
-    """生成患者模式温和摘要"""
-    pct = round((cycle_day / cycle.length_days) * 100)
+def _generate_patient_summary(
+    cycle: ChemoCycle, cycle_day: int, stats: KeyStats,
+) -> str:
+    """生成患者模式简要摘要"""
+    # 🔧 修复：cap pct to 100
+    pct = min(100, round((cycle_day / cycle.length_days) * 100))
 
-    # Determine encouraging tone
-    if stats.avg_energy_7d is not None and stats.avg_energy_7d <= 1.5:
+    if pct >= 100:
+        status_text = "这个疗程已经结束啦，辛苦了！"
+    elif stats.avg_energy_7d is not None and stats.avg_energy_7d <= 1.5:
         status_text = "最近状态不错，继续保持"
     elif cycle_day > 7:
         status_text = "最难的几天已经过去了，身体在恢复中"
     else:
         status_text = "身体在努力恢复中"
 
+    display_day = min(cycle_day, cycle.length_days) if cycle_day > cycle.length_days else cycle_day
+
     lines = [
-        f"今天是第{cycle.cycle_no}疗程的第{cycle_day}天 ☀️",
+        f"今天是第{cycle.cycle_no}疗程的第{display_day}天 ☀️",
         "",
         f"疗程已完成 {pct}%",
         "",
@@ -203,9 +225,6 @@ def get_summary(
 ):
     """
     获取汇总数据
-    - trends: 按 Day 对齐的数组
-    - key_stats: 峰值、发热事件等
-    - summary_text: 就诊文本
     """
     membership = get_user_family_role(db, user.id)
     if not membership:
@@ -288,10 +307,7 @@ def get_calendar(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """
-    获取状态日历数据（患者端用）
-    每天一个 emoji 状态，不展示具体数值
-    """
+    """获取状态日历数据"""
     membership = get_user_family_role(db, user.id)
     if not membership:
         raise HTTPException(status_code=400, detail="请先加入家庭")
@@ -300,13 +316,11 @@ def get_calendar(
     year = year or today.year
     month = month or today.month
 
-    # Get month range
     import calendar
     _, days_in_month = calendar.monthrange(year, month)
     start = date(year, month, 1)
     end = date(year, month, days_in_month)
 
-    # Get logs
     logs = (
         db.query(DailyLog)
         .filter(
@@ -318,7 +332,6 @@ def get_calendar(
     )
     log_map = {l.date: l for l in logs}
 
-    # Get active cycle for context
     cycle = (
         db.query(ChemoCycle)
         .filter(
@@ -336,7 +349,6 @@ def get_calendar(
         day_date = date(year, month, d)
         if day_date > today:
             continue
-
         log = log_map.get(day_date)
         if log:
             if counting_streak:
@@ -344,21 +356,18 @@ def get_calendar(
         else:
             counting_streak = False
 
-    # Reset and build forward
     streak_count = streak
     for d in range(1, days_in_month + 1):
         day_date = date(year, month, d)
         log = log_map.get(day_date)
 
-        # Compute cycle day
         cycle_day = None
         if cycle:
             delta = (day_date - cycle.start_date).days + 1
-            if delta >= 1:
+            if 1 <= delta <= cycle.length_days:
                 cycle_day = delta
 
         if log:
-            # Determine status based on composite score
             score = 0
             if log.energy is not None:
                 score += log.energy

@@ -1,43 +1,250 @@
-/* pages/trend/trend.wxss */
-.trend-page { padding: 24rpx 24rpx 120rpx; min-height: 100vh; }
+/* pages/trend/trend.wxss - 修复版：折线图 + 对比 */
+.trend-page {
+  padding: 24rpx 24rpx 140rpx;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+}
 
-/* 日历 */
-.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; padding: 0 8rpx; }
-.cal-month { font-size: 34rpx; font-weight: 700; color: #333; }
-.cal-streak { font-size: 24rpx; color: #E8A85B; }
+/* ─── 标题行 ─── */
+.trend-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 0 4rpx;
+}
 
-.cal-card { padding: 24rpx; }
-.cal-weekdays { display: flex; margin-bottom: 12rpx; }
-.cal-weekday { flex: 1; text-align: center; font-size: 22rpx; color: #999; }
+.trend-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #1E293B;
+}
+
+.trend-subtitle {
+  font-size: 24rpx;
+  color: #94A3B8;
+  margin-left: 12rpx;
+  font-weight: 500;
+}
+
+.compare-toggle {
+  background: #EEF2FF;
+  padding: 12rpx 24rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid #E0E7FF;
+}
+
+.compare-toggle-text {
+  font-size: 24rpx;
+  color: #6366F1;
+  font-weight: 600;
+}
+
+/* ─── 对比选择器 ─── */
+.compare-selector {
+  margin-bottom: 20rpx;
+  padding: 20rpx 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+}
+
+.compare-hint {
+  font-size: 24rpx;
+  color: #64748B;
+  margin-bottom: 16rpx;
+  display: block;
+  font-weight: 500;
+}
+
+.compare-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.compare-pill {
+  padding: 12rpx 24rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid #E2E8F0;
+  background: #FAFBFC;
+  font-size: 24rpx;
+  color: #64748B;
+  transition: all 0.2s ease;
+}
+
+.compare-pill.active {
+  border-color: #6366F1;
+  background: #EEF2FF;
+  color: #6366F1;
+  font-weight: 600;
+}
+
+.compare-empty {
+  font-size: 24rpx;
+  color: #94A3B8;
+  padding: 8rpx 0;
+}
+
+/* ─── 指标切换 Tabs ─── */
+.metric-tabs {
+  display: flex;
+  gap: 10rpx;
+  margin-bottom: 20rpx;
+  padding: 6rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.04);
+}
+
+.metric-tab {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  color: #94A3B8;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.metric-tab.active {
+  background: var(--tab-color, #6366F1);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.25);
+}
+
+/* ─── 图表卡片 ─── */
+.chart-card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+}
+
+.chart-wrapper {
+  position: relative;
+}
+
+.trend-canvas {
+  width: 100%;
+  height: 400rpx;
+}
+
+/* 图例 */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 32rpx;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F1F5F9;
+}
+
+.legend-line {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 22rpx;
+  color: #64748B;
+}
+
+.legend-line-solid {
+  width: 24rpx;
+  height: 4rpx;
+  border-radius: 2rpx;
+}
+
+.legend-line-dashed {
+  width: 24rpx;
+  height: 0;
+  border-top: 4rpx dashed #CBD5E1;
+}
+
+/* ─── 数据表格 ─── */
+.trend-table { margin-top: 16rpx; }
+
+.trend-row {
+  display: flex;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F1F5F9;
+  align-items: center;
+}
+
+.trend-row:last-child { border: none; }
+
+.trend-table-header {
+  font-weight: 700;
+  color: #64748B;
+  font-size: 22rpx;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+  border-bottom: 2rpx solid #E2E8F0;
+}
+
+.trend-cell {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: #334155;
+  font-weight: 500;
+}
+
+.day-cell {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.danger { color: #EF4444; }
+
+/* ─── 日历（患者端，与之前一致） ─── */
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 0 8rpx;
+}
+
+.cal-month {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #1E293B;
+}
+
+.cal-streak {
+  font-size: 24rpx;
+  color: #D97706;
+  font-weight: 600;
+  background: #FFFBEB;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid #FDE68A;
+}
+
+.cal-card { padding: 28rpx; border-radius: 28rpx; }
+
+.cal-weekdays { display: flex; margin-bottom: 16rpx; }
+.cal-weekday { flex: 1; text-align: center; font-size: 22rpx; color: #94A3B8; font-weight: 600; }
 
 .cal-grid { display: flex; flex-wrap: wrap; }
+
 .cal-day {
-  width: calc(100% / 7); height: 100rpx; display: flex;
-  flex-direction: column; align-items: center; justify-content: center;
-  font-size: 24rpx; position: relative;
+  width: calc(100% / 7); height: 108rpx;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 12rpx; transition: all 0.2s ease;
 }
+
 .cal-day.empty { visibility: hidden; }
-.cal-day.today .cal-day-num { color: var(--primary); font-weight: 700; }
-.cal-day-num { font-size: 26rpx; color: #666; }
-.cal-day-emoji { font-size: 28rpx; line-height: 1; }
-.cal-day-cycle { font-size: 16rpx; color: #BBB; }
+.cal-day.today { background: var(--primary-light); }
+.cal-day.today .cal-day-num { color: var(--primary); font-weight: 800; }
+.cal-day.logged { background: #F0FDF4; }
 
-.legend { display: flex; justify-content: center; gap: 32rpx; margin-top: 16rpx; }
-.legend-item { font-size: 22rpx; color: #999; }
+.cal-day-num { font-size: 26rpx; color: #475569; font-weight: 500; }
+.cal-day-emoji { font-size: 28rpx; line-height: 1; margin-top: 2rpx; }
+.cal-day-cycle { font-size: 16rpx; color: #CBD5E1; font-weight: 500; }
 
-/* 趋势表 */
-.trend-table { margin-top: 16rpx; }
-.trend-row { display: flex; padding: 16rpx 0; border-bottom: 1rpx solid #F5F5F5; align-items: center; }
-.trend-row:last-child { border: none; }
-.trend-header { font-weight: 600; color: #666; font-size: 24rpx; }
-.trend-cell { flex: 1; text-align: center; font-size: 26rpx; color: #333; position: relative; }
-.day-cell { font-weight: 600; color: var(--primary); }
-.danger { color: var(--danger); }
+.legend { display: flex; justify-content: center; gap: 36rpx; margin-top: 20rpx; padding: 16rpx 0; }
+.legend-item { font-size: 22rpx; color: #94A3B8; font-weight: 500; }
 
-.bar {
-  display: inline-block; height: 8rpx; border-radius: 4rpx;
-  position: absolute; bottom: -4rpx; left: 20%; min-width: 0;
-}
-
-.empty-hint { text-align: center; color: #999; padding: 60rpx 0; font-size: 28rpx; }
-.summary-btn { margin-top: 32rpx; }
+.empty-hint { text-align: center; color: #94A3B8; padding: 80rpx 0; font-size: 28rpx; }
+.summary-btn { margin-top: 28rpx; }

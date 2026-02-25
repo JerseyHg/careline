@@ -13,11 +13,11 @@
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTitleText": "CareLine",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#F6F7FB"
+    "backgroundColor": "#F8FAFC"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#5B7FE8",
+    "color": "#94A3B8",
+    "selectedColor": "#6366F1",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

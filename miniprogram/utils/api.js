@@ -1,5 +1,5 @@
 /**
- * CareLine API Client for 微信小程序
+ * CareLine API Client for 微信小程序 (修复版)
  */
 
 // ⚠️ 部署后改为你的域名
@@ -53,12 +53,22 @@ module.exports = {
     return request('/family/join', { method: 'POST', data: { invite_code: inviteCode, role: role, nickname: nickname } });
   },
   getMyFamily: function () { return request('/family/me'); },
+
+  // ─── 疗程 ───
   getCurrentCycle: function () { return request('/cycle/current'); },
   createCycle: function (data) { return request('/cycle', { method: 'POST', data: data }); },
+  listCycles: function () { return request('/cycle/list'); },
+
+  // ─── 每日记录 ───
   getToday: function () { return request('/daily/today'); },
   upsertDailyLog: function (dateStr, data) { return request('/daily/' + dateStr, { method: 'PUT', data: data }); },
+  getCycleLogs: function (cycleNo) { return request('/daily/cycle/' + cycleNo); },
+
+  // ─── 排便 ───
   recordStool: function (data) { return request('/stool', { method: 'POST', data: data }); },
   getTodayStool: function () { return request('/stool/today'); },
+
+  // ─── 摘要 ───
   getSummary: function (mode, cycleNo, days) {
     var url = '/summary?mode=' + mode;
     if (cycleNo) url += '&cycle_no=' + cycleNo;
@@ -66,6 +76,8 @@ module.exports = {
     return request(url);
   },
   getCalendar: function () { return request('/summary/calendar'); },
+
+  // ─── 留言 ───
   sendMessage: function (content) { return request('/message', { method: 'POST', data: { content: content } }); },
   getActiveMessages: function () { return request('/message/active'); }
 };
