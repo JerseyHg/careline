@@ -1,4 +1,4 @@
-// pages/record/record.js
+// pages/record/record.js - 修复版：从 storage 读取快速记录标记
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -6,7 +6,7 @@ Page({
   data: {
     isPatient: true,
     isToughDay: false,
-    confirmMode: '',  // '' | 'has_record' | 'no_record' | 'confirmed'
+    confirmMode: '',
     existingLog: null,
 
     energy: -1,
@@ -32,20 +32,44 @@ Page({
     loading: true
   },
 
-  onLoad: function (options) {
+  onLoad: function () {
     var ip = util.isPatient();
     this.setData({
       isPatient: ip,
-      isToughDay: options && options.tough === '1',
       energyLabels: ip ? util.ENERGY_LABELS_PATIENT : util.ENERGY_LABELS_CAREGIVER,
       nauseaLabels: ip ? util.NAUSEA_LABELS_PATIENT : util.NAUSEA_LABELS_CAREGIVER,
       sleepLabels: ip ? util.SLEEP_LABELS_PATIENT : util.SLEEP_LABELS_CAREGIVER
     });
+  },
+
+  onShow: function () {
+    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
+
+    // 🔧 修复：从 storage 读取快速记录标记（因为 record 是 tabBar 页，navigateTo 传参无效）
+    var tough = wx.getStorageSync('careline_tough_mode');
+    if (tough === '1') {
+      wx.removeStorageSync('careline_tough_mode');
+      this.setData({ isToughDay: true });
+    } else {
+      this.setData({ isToughDay: false });
+    }
+
+    // 重置表单状态
+    this.setData({
+      saved: false,
+      saving: false,
+      confirmMode: '',
+      energy: -1, nausea: -1, appetite: -1, sleep: -1, diarrhea: -1,
+      fever: false, tempC: '', stoolCount: 0,
+      numbness: false, mouthSore: false, note: ''
+    });
+
     this._loadExisting();
   },
 
   _loadExisting: function () {
     var that = this;
+    that.setData({ loading: true });
     api.getToday().then(function (log) {
       if (log) {
         that.setData({ existingLog: log });
@@ -84,14 +108,12 @@ Page({
     this.setData(d);
   },
 
-  // 确认流程
   confirmProxy: function () { this.setData({ confirmMode: 'confirmed' }); },
   confirmProxyNoRecord: function () { this.setData({ confirmMode: 'confirmed' }); },
   goBack: function () {
     wx.navigateBack({ fail: function () { wx.switchTab({ url: '/pages/home/home' }); } });
   },
 
-  // 表单事件
   setEnergy: function (e) { this.setData({ energy: Number(e.currentTarget.dataset.val) }); },
   setNausea: function (e) { this.setData({ nausea: Number(e.currentTarget.dataset.val) }); },
   setAppetite: function (e) { this.setData({ appetite: Number(e.currentTarget.dataset.val) }); },

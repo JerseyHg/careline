@@ -12,7 +12,7 @@
       <input
         type="text"
         maxlength="30"
-        placeholder="手机号 / 用户名"
+        placeholder="请输入账号"
         value="{{account}}"
         bindinput="onAccountInput"
         class="input-field"

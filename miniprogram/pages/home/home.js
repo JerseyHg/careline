@@ -91,7 +91,10 @@ Page({
   },
 
   goRecord: function () { wx.switchTab({ url: '/pages/record/record' }); },
-  goQuickRecord: function () { wx.navigateTo({ url: '/pages/record/record?tough=1' }); },
+  goQuickRecord: function () {
+    wx.setStorageSync('careline_tough_mode', '1');
+    wx.switchTab({ url: '/pages/record/record' });
+  },
   goStool: function () { wx.navigateTo({ url: '/pages/stool/stool' }); },
   goSummary: function () { wx.navigateTo({ url: '/pages/summary/summary' }); }
 });
