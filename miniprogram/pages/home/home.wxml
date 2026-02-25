@@ -1,43 +1,60 @@
-<!-- pages/home/home.wxml - 修复版：移除留言，优化措辞 -->
+<!-- pages/home/home.wxml - 优化版 -->
 <view class="home-page {{isPatient ? 'patient-theme' : 'caregiver-theme'}}">
   <view wx:if="{{loading}}" class="loading-center">加载中...</view>
 
   <view wx:else>
-    <!-- 顶部问候 -->
+    <!-- 顶部问候（动态） -->
     <view class="greeting">
-      <text class="greeting-text">{{isPatient ? '今天辛苦了' : ('你好，' + nickname)}}</text>
+      <text class="greeting-text">{{greetingText}}</text>
       <text class="greeting-sub" wx:if="{{cycleNo > 0}}">
         第{{cycleNo}}疗程 · Day {{cycleDay}}
       </text>
     </view>
 
-    <!-- 疗程提示 -->
+    <!-- 疗程阶段提示 -->
     <view class="cycle-hint" wx:if="{{cycleDayLabel}}">
       <text>{{cycleDayLabel}}</text>
     </view>
 
-    <!-- 今日状态卡片 -->
-    <view class="card status-card">
+    <!-- ══ 患者：今日状态卡片 ══ -->
+    <view wx:if="{{isPatient}}" class="card status-card">
+      <text class="status-emoji">{{statusEmoji}}</text>
+      <text class="status-text">{{statusText}}</text>
+
+      <!-- 未记录 -->
+      <view wx:if="{{!hasRecorded}}" class="action-btns">
+        <button class="btn-primary" bindtap="goRecord">📝 开始记录</button>
+        <button class="btn-quick" bindtap="showQuickTemp">🌡️ 只记体温</button>
+      </view>
+
+      <!-- 已记录：显示鼓励，不显示冰冷数值 -->
+      <view wx:else class="encourage-section">
+        <text class="encourage-text">{{encourageText}}</text>
+        <view class="recorded-actions">
+          <button class="btn-outline modify-btn" bindtap="goRecord">查看 / 修改</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- ══ 家属：今日状态卡片 ══ -->
+    <view wx:if="{{!isPatient}}" class="card status-card">
       <text class="status-emoji">{{statusEmoji}}</text>
       <text class="status-text">{{statusText}}</text>
 
       <view wx:if="{{!hasRecorded}}" class="action-btns">
-        <button class="btn-primary" bindtap="goRecord">📝 开始记录</button>
-        <button class="btn-quick" bindtap="goQuickRecord" wx:if="{{isPatient}}">
-          ⚡ 快速记录（只填体温）
-        </button>
+        <button class="btn-primary" bindtap="goRecord">📝 代填记录</button>
       </view>
 
       <view wx:else class="recorded-info">
-        <view class="info-grid" wx:if="{{todayLog}}">
+        <view class="info-grid">
           <view class="info-item" wx:if="{{todayLog.energy != null}}">
             <text class="info-icon">💪</text>
-            <text class="info-value">{{isPatient ? '' : (todayLog.energy + '/4')}}</text>
+            <text class="info-value">{{todayLog.energy}}/4</text>
             <text class="info-label">体力</text>
           </view>
           <view class="info-item" wx:if="{{todayLog.nausea != null}}">
             <text class="info-icon">🤢</text>
-            <text class="info-value">{{isPatient ? '' : (todayLog.nausea + '/3')}}</text>
+            <text class="info-value">{{todayLog.nausea}}/3</text>
             <text class="info-label">恶心</text>
           </view>
           <view class="info-item" wx:if="{{todayLog.stool_count != null}}">
@@ -71,7 +88,36 @@
         <text class="quick-label">代填记录</text>
       </view>
     </view>
+  </view>
 
-    <!-- 留言板暂时不显示，V2再做 -->
+  <!-- ══ 快速体温弹窗 ══ -->
+  <view wx:if="{{showQuickTemp}}" class="overlay" bindtap="hideQuickTemp">
+    <view class="quick-modal" catchtap="">
+      <text class="quick-modal-title">🌡️ 快速记体温</text>
+      <text class="quick-modal-desc">其他项目会用昨天的数据自动填充</text>
+
+      <view class="quick-temp-row">
+        <input
+          type="digit"
+          placeholder="36.5"
+          value="{{quickTempValue}}"
+          bindinput="onQuickTempInput"
+          class="quick-temp-input"
+          focus="{{showQuickTemp}}"
+        />
+        <text class="quick-temp-unit">℃</text>
+      </view>
+
+      <button
+        class="btn-primary quick-save-btn"
+        bindtap="onQuickTempSave"
+        loading="{{quickSaving}}"
+        disabled="{{quickSaving}}"
+      >记录</button>
+
+      <view class="quick-cancel" bindtap="hideQuickTemp">
+        <text>取消</text>
+      </view>
+    </view>
   </view>
 </view>
