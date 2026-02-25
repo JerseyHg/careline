@@ -26,26 +26,11 @@ Page({
   },
 
   openPrivacy: function () {
-    // 微信小程序内置隐私弹窗
-    if (wx.openPrivacyContract) {
-      wx.openPrivacyContract({
-        fail: function () {
-          wx.showModal({
-            title: '隐私保护协议',
-            content: 'CareLine 仅收集您主动录入的健康记录数据，用于家庭内部的治疗管理。我们不会向第三方分享您的任何数据。所有数据加密存储在服务器上，您可以随时通过退出登录清除本地缓存。',
-            showCancel: false,
-            confirmText: '我知道了'
-          });
-        }
-      });
-    } else {
-      wx.showModal({
-        title: '隐私保护协议',
-        content: 'CareLine 仅收集您主动录入的健康记录数据，用于家庭内部的治疗管理。我们不会向第三方分享您的任何数据。所有数据加密存储在服务器上，您可以随时通过退出登录清除本地缓存。',
-        showCancel: false,
-        confirmText: '我知道了'
-      });
-    }
+    wx.openPrivacyContract({
+      fail: function () {
+        wx.showToast({ title: '请在小程序后台配置隐私协议', icon: 'none' });
+      }
+    });
   },
 
   onLogin: function () {
