@@ -3,7 +3,7 @@
  */
 
 // ⚠️ 部署后改为你的域名
-var API_BASE = 'http://localhost:8000';
+var API_BASE = 'http://111.229.254.50:8002';
 
 function getToken() {
   return wx.getStorageSync('careline_token') || '';
