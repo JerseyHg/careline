@@ -1,0 +1,84 @@
+<!-- pages/home/home.wxml -->
+<view class="home-page {{isPatient ? 'patient-theme' : 'caregiver-theme'}}">
+  <view wx:if="{{loading}}" class="loading-center">加载中...</view>
+
+  <view wx:else>
+    <!-- 顶部问候 -->
+    <view class="greeting">
+      <text class="greeting-text">{{isPatient ? '今天辛苦了' : ('你好，' + nickname)}}</text>
+      <text class="greeting-sub" wx:if="{{cycleNo > 0}}">
+        第{{cycleNo}}疗程 · Day {{cycleDay}}
+      </text>
+    </view>
+
+    <!-- 疗程提示 -->
+    <view class="cycle-hint" wx:if="{{cycleDayLabel}}">
+      <text>{{cycleDayLabel}}</text>
+    </view>
+
+    <!-- 今日状态卡片 -->
+    <view class="card status-card">
+      <text class="status-emoji">{{statusEmoji}}</text>
+      <text class="status-text">{{statusText}}</text>
+
+      <view wx:if="{{!hasRecorded}}" class="action-btns">
+        <button class="btn-primary" bindtap="goRecord">📝 开始记录</button>
+        <button class="btn-tough" bindtap="goToughDay" wx:if="{{isPatient}}">
+          😞 今天很难受
+        </button>
+      </view>
+
+      <view wx:else class="recorded-info">
+        <view class="info-grid" wx:if="{{todayLog}}">
+          <view class="info-item" wx:if="{{todayLog.energy != null}}">
+            <text class="info-icon">💪</text>
+            <text class="info-value">{{isPatient ? '' : (todayLog.energy + '/4')}}</text>
+            <text class="info-label">体力</text>
+          </view>
+          <view class="info-item" wx:if="{{todayLog.nausea != null}}">
+            <text class="info-icon">🤢</text>
+            <text class="info-value">{{isPatient ? '' : (todayLog.nausea + '/3')}}</text>
+            <text class="info-label">恶心</text>
+          </view>
+          <view class="info-item" wx:if="{{todayLog.stool_count != null}}">
+            <text class="info-icon">🚽</text>
+            <text class="info-value">{{todayLog.stool_count}}次</text>
+            <text class="info-label">排便</text>
+          </view>
+          <view class="info-item" wx:if="{{todayLog.fever}}">
+            <text class="info-icon">🌡️</text>
+            <text class="info-value">{{todayLog.temp_c}}℃</text>
+            <text class="info-label">体温</text>
+          </view>
+        </view>
+        <button class="btn-outline modify-btn" bindtap="goRecord">修改记录</button>
+      </view>
+    </view>
+
+    <!-- 患者：排便浮动按钮 -->
+    <view wx:if="{{isPatient}}" class="fab" bindtap="goStool">
+      <text>🚽</text>
+    </view>
+
+    <!-- 家属：快捷入口 -->
+    <view wx:if="{{!isPatient}}" class="quick-actions">
+      <view class="quick-item" bindtap="goSummary">
+        <text class="quick-icon">📋</text>
+        <text class="quick-label">就诊摘要</text>
+      </view>
+      <view class="quick-item" bindtap="goRecord">
+        <text class="quick-icon">✍️</text>
+        <text class="quick-label">代填记录</text>
+      </view>
+    </view>
+
+    <!-- 家人留言 -->
+    <view class="card message-card" wx:if="{{messages.length > 0}}">
+      <text class="section-title">💌 家人的话</text>
+      <view class="message-item" wx:for="{{messages}}" wx:key="id">
+        <text class="message-content">{{item.content}}</text>
+        <text class="message-from">—— {{item.sender_name}}</text>
+      </view>
+    </view>
+  </view>
+</view>

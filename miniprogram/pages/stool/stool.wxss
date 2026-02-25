@@ -1,0 +1,36 @@
+/* pages/stool/stool.wxss */
+.stool-page { padding: 24rpx 24rpx 120rpx; }
+
+.today-count {
+  text-align: center; font-size: 24rpx; color: #999;
+  padding: 16rpx; margin-bottom: 16rpx;
+}
+
+.bristol-grid { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.bristol-item {
+  width: calc(25% - 12rpx); padding: 20rpx 0; border-radius: 16rpx;
+  border: 2rpx solid #EAEAEA; text-align: center; background: #fff;
+}
+.bristol-item.active { border-color: var(--primary); background: var(--primary-light); }
+.bristol-num { display: block; font-size: 32rpx; font-weight: 700; color: #333; }
+.bristol-item.active .bristol-num { color: var(--primary); }
+.bristol-label { display: block; font-size: 20rpx; color: #999; margin-top: 4rpx; }
+.bristol-item.active .bristol-label { color: var(--primary); }
+
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20rpx 0; border-bottom: 1rpx solid #F5F5F5;
+}
+.toggle-row:last-child { border: none; }
+.toggle-label { font-size: 28rpx; color: #333; }
+.toggle-switch {
+  width: 88rpx; height: 48rpx; border-radius: 24rpx;
+  background: #E0E0E0; position: relative; transition: background 0.3s;
+}
+.toggle-switch.on { background: var(--primary); }
+.toggle-dot {
+  width: 40rpx; height: 40rpx; border-radius: 20rpx;
+  background: #fff; position: absolute; top: 4rpx; left: 4rpx;
+  transition: transform 0.3s; box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+}
+.toggle-switch.on .toggle-dot { transform: translateX(40rpx); }

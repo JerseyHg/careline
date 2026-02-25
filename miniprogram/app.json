@@ -1,0 +1,53 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/record/record",
+    "pages/trend/trend",
+    "pages/settings/settings",
+    "pages/login/login",
+    "pages/onboard/onboard",
+    "pages/stool/stool",
+    "pages/summary/summary"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "CareLine",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F6F7FB"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#5B7FE8",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/record/record",
+        "text": "记录",
+        "iconPath": "images/tab-record.png",
+        "selectedIconPath": "images/tab-record-active.png"
+      },
+      {
+        "pagePath": "pages/trend/trend",
+        "text": "数据",
+        "iconPath": "images/tab-trend.png",
+        "selectedIconPath": "images/tab-trend-active.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "我的",
+        "iconPath": "images/tab-settings.png",
+        "selectedIconPath": "images/tab-settings-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

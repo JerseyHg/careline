@@ -1,0 +1,19 @@
+{
+  "compileType": "miniprogram",
+  "setting": {
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "appid": "wx0bf66039a3c3ca79",
+  "projectname": "careline",
+  "description": "CareLine 化疗副作用管理",
+  "libVersion": "3.3.4"
+}

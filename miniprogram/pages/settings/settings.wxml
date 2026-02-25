@@ -1,0 +1,65 @@
+<!-- pages/settings/settings.wxml -->
+<view class="settings-page">
+
+  <!-- 用户信息 -->
+  <view class="card user-card">
+    <text class="user-emoji">{{isPatient ? '🧑‍🦳' : '👨‍⚕️'}}</text>
+    <view class="user-info">
+      <text class="user-name">{{nickname || '用户'}}</text>
+      <text class="user-role">{{isPatient ? '患者' : '家属/照护者'}}</text>
+    </view>
+  </view>
+
+  <!-- 疗程信息 -->
+  <view class="card">
+    <text class="section-title">💊 当前疗程</text>
+    <view wx:if="{{cycleNo > 0}}" class="cycle-info">
+      <text class="cycle-text">第{{cycleNo}}疗程 · Day {{cycleDay}}</text>
+      <text class="cycle-start">开始日期: {{startDate}}</text>
+    </view>
+    <text wx:else class="empty-hint">暂无疗程</text>
+
+    <view class="divider"></view>
+    <view wx:if="{{!showNewCycle}}">
+      <button class="btn-outline" bindtap="toggleNewCycle">+ 新建疗程</button>
+    </view>
+    <view wx:else class="new-cycle-form">
+      <view class="input-group">
+        <text class="input-label">第几疗程</text>
+        <input type="number" value="{{newCycleNo}}" bindinput="onNewCycleNoInput" class="input-field" />
+      </view>
+      <view class="input-group">
+        <text class="input-label">开始日期</text>
+        <picker mode="date" value="{{newStartDate}}" bindchange="onNewStartDateChange">
+          <view class="input-field picker-field">{{newStartDate || '选择日期'}}</view>
+        </picker>
+      </view>
+      <button class="btn-primary" bindtap="onCreateCycle">创建</button>
+      <button class="btn-outline" bindtap="toggleNewCycle" style="margin-top: 12rpx;">取消</button>
+    </view>
+  </view>
+
+  <!-- 家庭信息 -->
+  <view class="card">
+    <text class="section-title">👨‍👩‍👧 家庭</text>
+    <view class="info-row">
+      <text class="info-label">家庭名称</text>
+      <text class="info-value">{{familyName}}</text>
+    </view>
+    <view class="info-row" bindtap="copyInviteCode">
+      <text class="info-label">邀请码</text>
+      <text class="info-value invite-code">{{inviteCode}} 📋</text>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="card" wx:if="{{!isPatient}}">
+    <view class="menu-item" bindtap="goSummary">
+      <text>📋 就诊摘要</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出 -->
+  <button class="btn-logout" bindtap="onLogout">退出登录</button>
+</view>

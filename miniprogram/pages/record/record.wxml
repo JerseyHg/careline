@@ -1,0 +1,190 @@
+<!-- pages/record/record.wxml -->
+<view class="record-page">
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-center">加载中...</view>
+
+  <!-- 家属：患者已记录，确认页 -->
+  <view wx:elif="{{confirmMode === 'has_record'}}" class="confirm-section">
+    <view class="card confirm-card has-record">
+      <text class="confirm-emoji">⚠️</text>
+      <text class="confirm-title">患者今天已经记录过了</text>
+      <text class="confirm-desc" wx:if="{{existingLog.is_tough_day}}">（使用了「今天很难受」快捷模式）</text>
+
+      <view class="existing-data">
+        <text class="data-header">已记录的数据</text>
+        <view class="data-grid">
+          <text wx:if="{{existingLog.energy != null}}" class="data-item">💪 体力: {{existingLog.energy}}/4</text>
+          <text wx:if="{{existingLog.nausea != null}}" class="data-item">🤢 恶心: {{existingLog.nausea}}/3</text>
+          <text wx:if="{{existingLog.stool_count != null}}" class="data-item">🚽 排便: {{existingLog.stool_count}}次</text>
+          <text wx:if="{{existingLog.fever}}" class="data-item danger">🌡️ 发热: {{existingLog.temp_c}}℃</text>
+        </view>
+      </view>
+
+      <button class="btn-primary" bindtap="confirmProxy">我来补充/修改</button>
+      <button class="btn-outline" bindtap="goBack" style="margin-top: 16rpx;">不修改，返回</button>
+      <text class="confirm-hint">修改后记录会标注「由家属代填/补充」</text>
+    </view>
+  </view>
+
+  <!-- 家属：患者没记录，提示页 -->
+  <view wx:elif="{{confirmMode === 'no_record'}}" class="confirm-section">
+    <view class="card confirm-card no-record">
+      <text class="confirm-emoji">📝</text>
+      <text class="confirm-title">患者今天还没有记录</text>
+      <text class="confirm-desc">可以等患者自己填写，或由您替患者代填</text>
+
+      <button class="btn-primary" bindtap="confirmProxyNoRecord">我来替患者记录</button>
+      <button class="btn-outline" bindtap="goBack" style="margin-top: 16rpx;">等患者自己填</button>
+      <text class="confirm-hint">代填的记录会标注为家属代填</text>
+    </view>
+  </view>
+
+  <!-- 保存成功 -->
+  <view wx:elif="{{saved}}" class="success-section">
+    <text class="success-emoji">✅</text>
+    <text class="success-title">{{isPatient ? '今天的记录完成了！' : '代填记录已保存'}}</text>
+    <text class="success-desc">{{isPatient ? '辛苦了，好好休息 ☺️' : '数据已更新'}}</text>
+    <button class="btn-primary" bindtap="goHome" style="margin-top: 40rpx;">回到首页</button>
+  </view>
+
+  <!-- 主表单 -->
+  <view wx:elif="{{confirmMode === 'confirmed'}}">
+    <!-- 代填提示 -->
+    <view wx:if="{{!isPatient}}" class="proxy-banner">
+      <text>👨‍⚕️ 代填模式 — 正在为患者记录</text>
+    </view>
+
+    <!-- 体力 -->
+    <view class="card">
+      <text class="section-title">💪 体力</text>
+      <view class="score-row">
+        <view
+          wx:for="{{energyLabels}}" wx:key="index"
+          class="score-item {{energy === index ? 'active' : ''}}"
+          data-val="{{index}}" bindtap="setEnergy"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 恶心 -->
+    <view class="card">
+      <text class="section-title">🤢 恶心</text>
+      <view class="score-row">
+        <view
+          wx:for="{{nauseaLabels}}" wx:key="index"
+          class="score-item {{nausea === index ? 'active' : ''}}"
+          data-val="{{index}}" bindtap="setNausea"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 食欲 -->
+    <view class="card">
+      <text class="section-title">🍚 食欲</text>
+      <view class="score-row">
+        <view
+          wx:for="{{appetiteLabels}}" wx:key="index"
+          class="score-item {{appetite === index ? 'active' : ''}}"
+          data-val="{{index}}" bindtap="setAppetite"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 睡眠 -->
+    <view class="card">
+      <text class="section-title">😴 睡眠</text>
+      <view class="score-row">
+        <view
+          wx:for="{{sleepLabels}}" wx:key="index"
+          class="score-item {{sleep === index ? 'active' : ''}}"
+          data-val="{{index}}" bindtap="setSleep"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 排便次数 -->
+    <view class="card">
+      <text class="section-title">🚽 排便次数</text>
+      <view class="stepper">
+        <view class="stepper-btn" bindtap="stoolMinus">−</view>
+        <text class="stepper-value">{{stoolCount}}</text>
+        <view class="stepper-btn" bindtap="stoolPlus">＋</view>
+      </view>
+    </view>
+
+    <!-- 腹泻 -->
+    <view class="card">
+      <text class="section-title">💧 腹泻程度</text>
+      <view class="score-row">
+        <view
+          wx:for="{{diarrheaLabels}}" wx:key="index"
+          class="score-item {{diarrhea === index ? 'active' : ''}}"
+          data-val="{{index}}" bindtap="setDiarrhea"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 开关项 -->
+    <view class="card">
+      <text class="section-title">其他症状</text>
+
+      <view class="toggle-row" bindtap="toggleFever">
+        <text class="toggle-label">🌡️ 发热</text>
+        <view class="toggle-switch {{fever ? 'on' : ''}}">
+          <view class="toggle-dot"></view>
+        </view>
+      </view>
+      <view wx:if="{{fever}}" class="temp-input-row">
+        <text class="temp-label">体温(℃)</text>
+        <input type="digit" placeholder="37.5" value="{{tempC}}" bindinput="onTempInput" class="temp-input" />
+      </view>
+
+      <view class="toggle-row" bindtap="toggleNumbness">
+        <text class="toggle-label">🖐 手足麻木</text>
+        <view class="toggle-switch {{numbness ? 'on' : ''}}">
+          <view class="toggle-dot"></view>
+        </view>
+      </view>
+
+      <view class="toggle-row" bindtap="toggleMouthSore">
+        <text class="toggle-label">👄 口腔溃疡</text>
+        <view class="toggle-switch {{mouthSore ? 'on' : ''}}">
+          <view class="toggle-dot"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="card">
+      <text class="section-title">📝 备注（可选）</text>
+      <textarea
+        placeholder="今天有什么想记的..."
+        value="{{note}}"
+        bindinput="onNoteInput"
+        class="note-textarea"
+        maxlength="200"
+        auto-height="{{true}}"
+      />
+    </view>
+
+    <!-- 保存按钮 -->
+    <view class="save-area">
+      <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">
+        {{saving ? '保存中...' : '✅ 完成记录'}}
+      </button>
+    </view>
+
+    <view style="height: 120rpx;"></view>
+  </view>
+</view>

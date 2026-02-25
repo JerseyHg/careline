@@ -1,0 +1,47 @@
+<!-- pages/stool/stool.wxml -->
+<view class="stool-page">
+  <view class="today-count">今日已记录 {{todayCount}} 次</view>
+
+  <view class="card">
+    <text class="section-title">Bristol 分型</text>
+    <view class="bristol-grid">
+      <view
+        wx:for="{{bristolLabels}}" wx:key="index"
+        class="bristol-item {{bristol === (index + 1) ? 'active' : ''}}"
+        data-val="{{index + 1}}" bindtap="setBristol"
+      >
+        <text class="bristol-num">{{index + 1}}</text>
+        <text class="bristol-label">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="section-title">其他情况</text>
+
+    <view class="toggle-row" bindtap="toggleBlood">
+      <text class="toggle-label">🩸 带血</text>
+      <view class="toggle-switch {{blood ? 'on' : ''}}">
+        <view class="toggle-dot"></view>
+      </view>
+    </view>
+
+    <view class="toggle-row" bindtap="toggleMucus">
+      <text class="toggle-label">💧 黏液</text>
+      <view class="toggle-switch {{mucus ? 'on' : ''}}">
+        <view class="toggle-dot"></view>
+      </view>
+    </view>
+
+    <view class="toggle-row" bindtap="toggleTenesmus">
+      <text class="toggle-label">🔄 里急后重</text>
+      <view class="toggle-switch {{tenesmus ? 'on' : ''}}">
+        <view class="toggle-dot"></view>
+      </view>
+    </view>
+  </view>
+
+  <button class="btn-primary" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">
+    ✅ 记录这次
+  </button>
+</view>

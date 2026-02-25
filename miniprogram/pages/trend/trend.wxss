@@ -1,0 +1,43 @@
+/* pages/trend/trend.wxss */
+.trend-page { padding: 24rpx 24rpx 120rpx; min-height: 100vh; }
+
+/* 日历 */
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; padding: 0 8rpx; }
+.cal-month { font-size: 34rpx; font-weight: 700; color: #333; }
+.cal-streak { font-size: 24rpx; color: #E8A85B; }
+
+.cal-card { padding: 24rpx; }
+.cal-weekdays { display: flex; margin-bottom: 12rpx; }
+.cal-weekday { flex: 1; text-align: center; font-size: 22rpx; color: #999; }
+
+.cal-grid { display: flex; flex-wrap: wrap; }
+.cal-day {
+  width: calc(100% / 7); height: 100rpx; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  font-size: 24rpx; position: relative;
+}
+.cal-day.empty { visibility: hidden; }
+.cal-day.today .cal-day-num { color: var(--primary); font-weight: 700; }
+.cal-day-num { font-size: 26rpx; color: #666; }
+.cal-day-emoji { font-size: 28rpx; line-height: 1; }
+.cal-day-cycle { font-size: 16rpx; color: #BBB; }
+
+.legend { display: flex; justify-content: center; gap: 32rpx; margin-top: 16rpx; }
+.legend-item { font-size: 22rpx; color: #999; }
+
+/* 趋势表 */
+.trend-table { margin-top: 16rpx; }
+.trend-row { display: flex; padding: 16rpx 0; border-bottom: 1rpx solid #F5F5F5; align-items: center; }
+.trend-row:last-child { border: none; }
+.trend-header { font-weight: 600; color: #666; font-size: 24rpx; }
+.trend-cell { flex: 1; text-align: center; font-size: 26rpx; color: #333; position: relative; }
+.day-cell { font-weight: 600; color: var(--primary); }
+.danger { color: var(--danger); }
+
+.bar {
+  display: inline-block; height: 8rpx; border-radius: 4rpx;
+  position: absolute; bottom: -4rpx; left: 20%; min-width: 0;
+}
+
+.empty-hint { text-align: center; color: #999; padding: 60rpx 0; font-size: 28rpx; }
+.summary-btn { margin-top: 32rpx; }

@@ -1,0 +1,44 @@
+<!-- pages/summary/summary.wxml -->
+<view class="summary-page">
+  <view wx:if="{{loading}}" class="loading-center">生成摘要中...</view>
+
+  <view wx:else>
+    <!-- 关键指标 -->
+    <view class="card stats-card" wx:if="{{keyStats && !isPatient}}">
+      <text class="section-title">📊 关键指标</text>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-value">{{keyStats.max_nausea != null ? keyStats.max_nausea : '-'}}/3</text>
+          <text class="stat-label">恶心峰值</text>
+          <text class="stat-day" wx:if="{{keyStats.max_nausea_day}}">Day {{keyStats.max_nausea_day}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{keyStats.min_energy != null ? keyStats.min_energy : '-'}}/4</text>
+          <text class="stat-label">体力最低</text>
+          <text class="stat-day" wx:if="{{keyStats.min_energy_day}}">Day {{keyStats.min_energy_day}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{keyStats.max_stool != null ? keyStats.max_stool : '-'}}</text>
+          <text class="stat-label">排便最多</text>
+          <text class="stat-day" wx:if="{{keyStats.max_stool_day}}">Day {{keyStats.max_stool_day}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{keyStats.fever_count || 0}}</text>
+          <text class="stat-label">发热次数</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 摘要文本 -->
+    <view class="card text-card">
+      <text class="section-title">{{isPatient ? '📋 我的记录' : '📋 就诊摘要'}}</text>
+      <text class="summary-text" selectable="{{true}}">{{summaryText}}</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="btn-row" wx:if="{{!isPatient}}">
+      <button class="btn-primary" bindtap="onCopy">📋 复制摘要</button>
+      <button class="btn-outline share-btn" open-type="share">📤 分享给医生</button>
+    </view>
+  </view>
+</view>

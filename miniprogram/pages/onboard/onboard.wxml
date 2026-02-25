@@ -1,0 +1,88 @@
+<!-- pages/onboard/onboard.wxml -->
+<view class="onboard-page">
+
+  <!-- 选择模式 -->
+  <view wx:if="{{mode === ''}}">
+    <view class="logo-section">
+      <text class="logo-emoji">👨‍👩‍👧</text>
+      <text class="title">加入家庭</text>
+      <text class="subtitle">和家人一起记录，让治疗更有序</text>
+    </view>
+
+    <view class="card" bindtap="selectCreate">
+      <text class="card-icon">🏠</text>
+      <view class="card-text">
+        <text class="card-title">创建新家庭</text>
+        <text class="card-desc">我是家属，创建后分享邀请码给患者</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+
+    <view class="card" bindtap="selectJoin">
+      <text class="card-icon">🔗</text>
+      <view class="card-text">
+        <text class="card-title">加入已有家庭</text>
+        <text class="card-desc">我有家人的邀请码</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 创建家庭 -->
+  <view wx:if="{{mode === 'create'}}">
+    <view class="form-card">
+      <text class="form-title">创建家庭</text>
+
+      <view class="input-group">
+        <text class="input-label">家庭名称</text>
+        <input placeholder="如：我们的家" value="{{familyName}}" bindinput="onFamilyNameInput" class="input-field" />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">您的称呼</text>
+        <input placeholder="如：小明" value="{{nickname}}" bindinput="onNicknameInput" class="input-field" />
+      </view>
+
+      <button class="btn-primary" bindtap="onCreateFamily" loading="{{loading}}" disabled="{{loading}}">
+        创建并进入
+      </button>
+      <view class="back-link" bindtap="goBack"><text>‹ 返回</text></view>
+    </view>
+  </view>
+
+  <!-- 加入家庭 -->
+  <view wx:if="{{mode === 'join'}}">
+    <view class="form-card">
+      <text class="form-title">加入家庭</text>
+
+      <view class="input-group">
+        <text class="input-label">邀请码</text>
+        <input placeholder="请输入邀请码" value="{{inviteCode}}" bindinput="onInviteCodeInput" class="input-field" />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">您的称呼</text>
+        <input placeholder="如：爸爸" value="{{nickname}}" bindinput="onNicknameInput" class="input-field" />
+      </view>
+
+      <view class="input-group">
+        <text class="input-label">我的角色</text>
+        <view class="role-row">
+          <view class="role-item {{role === 'patient' ? 'active' : ''}}" bindtap="selectPatient">
+            <text class="role-emoji">🧑‍🦳</text>
+            <text class="role-name">患者</text>
+          </view>
+          <view class="role-item {{role === 'caregiver' ? 'active' : ''}}" bindtap="selectCaregiver">
+            <text class="role-emoji">👨‍⚕️</text>
+            <text class="role-name">家属</text>
+          </view>
+        </view>
+      </view>
+
+      <button class="btn-primary" bindtap="onJoinFamily" loading="{{loading}}" disabled="{{loading}}">
+        加入家庭
+      </button>
+      <view class="back-link" bindtap="goBack"><text>‹ 返回</text></view>
+    </view>
+  </view>
+</view>

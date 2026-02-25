@@ -1,0 +1,71 @@
+<!-- pages/trend/trend.wxml -->
+<view class="trend-page">
+  <view wx:if="{{loading}}" class="loading-center">加载中...</view>
+
+  <!-- 患者：日历视图 -->
+  <view wx:elif="{{isPatient}}">
+    <view class="cal-header">
+      <text class="cal-month">{{calMonth}}</text>
+      <text class="cal-streak" wx:if="{{streak > 0}}">🔥 连续记录{{streak}}天</text>
+    </view>
+
+    <view class="card cal-card">
+      <view class="cal-weekdays">
+        <text wx:for="{{['日','一','二','三','四','五','六']}}" wx:key="index" class="cal-weekday">{{item}}</text>
+      </view>
+
+      <view class="cal-grid">
+        <view
+          wx:for="{{calendarDays}}" wx:key="index"
+          class="cal-day {{item.empty ? 'empty' : ''}} {{item.isToday ? 'today' : ''}} {{item.hasLog ? 'logged' : ''}}"
+        >
+          <block wx:if="{{!item.empty}}">
+            <text class="cal-day-num">{{item.day}}</text>
+            <text class="cal-day-emoji" wx:if="{{item.emoji}}">{{item.emoji}}</text>
+            <text class="cal-day-cycle" wx:if="{{item.cycleDay}}">D{{item.cycleDay}}</text>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view class="legend">
+      <text class="legend-item">😊 状态好</text>
+      <text class="legend-item">😐 一般</text>
+      <text class="legend-item">😔 较辛苦</text>
+    </view>
+  </view>
+
+  <!-- 家属：趋势数据表 -->
+  <view wx:else>
+    <view class="card">
+      <text class="section-title">第{{cycleNo}}疗程趋势</text>
+
+      <view wx:if="{{trendData.length === 0}}" class="empty-hint">暂无数据</view>
+
+      <view wx:else class="trend-table">
+        <view class="trend-row trend-header">
+          <text class="trend-cell">Day</text>
+          <text class="trend-cell">体力</text>
+          <text class="trend-cell">恶心</text>
+          <text class="trend-cell">排便</text>
+          <text class="trend-cell">发热</text>
+        </view>
+        <view wx:for="{{trendData}}" wx:key="cycle_day" class="trend-row">
+          <text class="trend-cell day-cell">D{{item.cycle_day}}</text>
+          <text class="trend-cell">
+            <text class="bar" style="width: {{item.energy ? (item.energy * 25) : 0}}%; background: #5B7FE8;"></text>
+            {{item.energy != null ? item.energy : '-'}}
+          </text>
+          <text class="trend-cell">
+            <text class="bar" style="width: {{item.nausea ? (item.nausea * 33) : 0}}%; background: #E8A85B;"></text>
+            {{item.nausea != null ? item.nausea : '-'}}
+          </text>
+          <text class="trend-cell">{{item.stool_count != null ? item.stool_count : '-'}}</text>
+          <text class="trend-cell {{item.fever ? 'danger' : ''}}">{{item.fever ? '🌡️' : '—'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="btn-primary summary-btn" bindtap="goSummary">📋 查看就诊摘要</button>
+  </view>
+</view>
