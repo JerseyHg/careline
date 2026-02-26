@@ -4,9 +4,11 @@
 
 function toDateStr(d) {
   var date = d || new Date();
-  var y = date.getFullYear();
-  var m = String(date.getMonth() + 1).padStart(2, '0');
-  var day = String(date.getDate()).padStart(2, '0');
+  // 强制转为中国时间 (UTC+8)
+  var china = new Date(date.getTime() + (8 * 60 + date.getTimezoneOffset()) * 60000);
+  var y = china.getFullYear();
+  var m = String(china.getMonth() + 1).padStart(2, '0');
+  var day = String(china.getDate()).padStart(2, '0');
   return y + '-' + m + '-' + day;
 }
 
