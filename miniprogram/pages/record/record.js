@@ -122,8 +122,8 @@ Page({
     if (log.sleep_quality != null) d.sleep = log.sleep_quality;
     if (log.diarrhea != null) d.diarrhea = log.diarrhea;
     if (log.fever) { d.fever = true; d.tempC = log.temp_c ? String(log.temp_c) : ''; }
-    // 排便次数：优先用 StoolEvent 的实际统计
-    d.stoolCount = actualStoolCount > 0 ? actualStoolCount : (log.stool_count || 0);
+    // 有 DailyLog 时用保存的值，没有时用 StoolEvent 计数
+    d.stoolCount = (log.stool_count != null) ? log.stool_count : actualStoolCount;
     if (log.numbness) d.numbness = true;
     if (log.mouth_sore) d.mouthSore = true;
     if (log.note) d.note = log.note;
