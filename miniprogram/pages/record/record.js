@@ -1,4 +1,4 @@
-// pages/record/record.js - 修复版：保留已填数据 + 排便次数从StoolEvent同步
+// pages/record/record.js - 优化版：脏标记缓存 + 排便同步
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -54,12 +54,13 @@ Page({
       this.setData({ isToughDay: false });
     }
 
-    // 重置保存状态（但不重置表单数据，等 _loadExisting 决定）
-    this.setData({
-      saved: false,
-      saving: false,
-      confirmMode: ''
-    });
+    // 重置保存状态
+    this.setData({ saved: false, saving: false, confirmMode: '' });
+
+    // 脏标记检查：没有数据变化且已加载过 → 跳过请求
+    var dirty = wx.getStorageSync('careline_dirty');
+    if (!dirty && this._loaded) return;
+    wx.removeStorageSync('careline_dirty');
 
     this._loadExisting();
   },
@@ -68,15 +69,12 @@ Page({
     var that = this;
     that.setData({ loading: true });
 
-    // 同时加载今日记录和今日排便汇总
     var todayLogPromise = api.getToday().catch(function () { return null; });
     var todayStoolPromise = api.getTodayStool().catch(function () { return null; });
 
     Promise.all([todayLogPromise, todayStoolPromise]).then(function (results) {
       var log = results[0];
       var stoolSummary = results[1];
-
-      // 用排便事件的实际次数（优先于 DailyLog 的 stool_count）
       var actualStoolCount = (stoolSummary && stoolSummary.count != null) ? stoolSummary.count : 0;
 
       if (log) {
@@ -88,7 +86,6 @@ Page({
           that.setData({ confirmMode: 'confirmed' });
         }
       } else {
-        // 没有每日记录，但可能有排便事件
         that._resetForm();
         that.setData({ stoolCount: actualStoolCount });
         if (!that.data.isPatient) {
@@ -97,9 +94,12 @@ Page({
           that.setData({ confirmMode: 'confirmed' });
         }
       }
+
+      that._loaded = true;
     }).catch(function () {
       that._resetForm();
       that.setData({ confirmMode: 'confirmed' });
+      that._loaded = true;
     }).finally(function () {
       that.setData({ loading: false });
     });
@@ -122,7 +122,6 @@ Page({
     if (log.sleep_quality != null) d.sleep = log.sleep_quality;
     if (log.diarrhea != null) d.diarrhea = log.diarrhea;
     if (log.fever) { d.fever = true; d.tempC = log.temp_c ? String(log.temp_c) : ''; }
-    // 有 DailyLog 时用保存的值，没有时用 StoolEvent 计数
     d.stoolCount = (log.stool_count != null) ? log.stool_count : actualStoolCount;
     if (log.numbness) d.numbness = true;
     if (log.mouth_sore) d.mouthSore = true;
@@ -176,6 +175,8 @@ Page({
       is_tough_day: d.isToughDay,
       note: d.note || null
     }).then(function () {
+      wx.setStorageSync('careline_dirty', '1');
+      that._loaded = false;
       that.setData({ saved: true });
     }).catch(function (err) {
       wx.showToast({ title: err.message || '保存失败', icon: 'none' });

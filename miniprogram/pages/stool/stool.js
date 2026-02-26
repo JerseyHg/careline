@@ -1,4 +1,4 @@
-// pages/stool/stool.js
+// pages/stool/stool.js - 优化版：保存后标脏
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -34,6 +34,7 @@ Page({
       mucus: that.data.mucus,
       tenesmus: that.data.tenesmus
     }).then(function () {
+      wx.setStorageSync('careline_dirty', '1');
       wx.showToast({ title: '已记录', icon: 'success' });
       setTimeout(function () {
         wx.navigateBack({ fail: function () { wx.switchTab({ url: '/pages/home/home' }); } });

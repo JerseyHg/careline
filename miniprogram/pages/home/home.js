@@ -1,4 +1,4 @@
-// pages/home/home.js - 优化版：动态问候 + 快速体温 + 鼓励展示
+// pages/home/home.js - 优化版：脏标记缓存 + 动态问候 + 快速体温
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -40,6 +40,12 @@ Page({
 
   onShow: function () {
     wx.pageScrollTo({ scrollTop: 0, duration: 0 });
+
+    // 脏标记检查：没有数据变化且已加载过 → 跳过请求
+    var dirty = wx.getStorageSync('careline_dirty');
+    if (!dirty && this._loaded) return;
+    wx.removeStorageSync('careline_dirty');
+
     this._loadData();
   },
 
@@ -50,14 +56,12 @@ Page({
     var name = nick ? ('，' + nick) : '';
 
     if (this.data.isPatient) {
-      // 患者端：温暖鼓励
       if (hour < 9) return '早安' + name + ' ☀️';
       if (hour < 12) return '上午好' + name + ' 🌤';
       if (hour < 14) return '中午好' + name + ' 🍚';
       if (hour < 18) return '下午好' + name + ' 🌿';
       return '晚上好' + name + ' 🌙';
     } else {
-      // 家属端
       if (hour < 12) return '上午好' + name;
       if (hour < 18) return '下午好' + name;
       return '晚上好' + name;
@@ -70,63 +74,28 @@ Page({
 
     if (cycleDay > (lengthDays || 21)) {
       return this.data.isPatient
-        ? '这个疗程周期结束啦，辛苦了 🎉'
-        : '⏰ 当前疗程已超期，请创建新疗程';
+        ? '疗程已结束，等待下一个疗程'
+        : '超出周期 (D' + cycleDay + '/' + (lengthDays || 21) + ')';
     }
 
     if (this.data.isPatient) {
-      if (cycleDay <= 2) return '刚开始，好好休息 💤';
-      if (cycleDay <= 5) return '这几天可能会有些反应，慢慢来 🤗';
-      if (cycleDay <= 7) return '快撑过最难的几天了 💪';
-      if (cycleDay <= 14) return '身体在慢慢恢复，继续加油 🌱';
-      return '恢复期，每天都在变好 🌈';
+      if (cycleDay <= 2) return '输液期，加油 💪';
+      if (cycleDay <= 7) return '这几天可能会难受，慢慢来';
+      if (cycleDay <= 14) return '在恢复了，继续坚持';
+      return '快到休息期了 ☺️';
     } else {
-      if (cycleDay <= 2) return '化疗初期';
-      if (cycleDay <= 7) return '⚠️ 副作用高峰期';
-      if (cycleDay <= 14) return '恢复期';
-      return '副作用窗口已过';
+      return '第' + cycleDay + '天 / 共' + (lengthDays || 21) + '天';
     }
   },
 
-  // ─── 记录后鼓励语（患者端） ───
+  // ─── 鼓励语 ───
   _getEncouragement: function (log) {
     if (!log) return '';
-
-    var e = log.energy;
-    var n = log.nausea;
-    var tough = log.is_tough_day;
-
-    if (tough) {
-      return '今天不容易，记录下来就很棒了 🌟';
-    }
-
-    // 状态不错
-    if ((e != null && e <= 1) && (n != null && n <= 1)) {
-      var goods = [
-        '今天状态不错呀！继续保持 😊',
-        '看起来恢复得很好 🌻',
-        '身体在往好的方向走 💚'
-      ];
-      return goods[Math.floor(Math.random() * goods.length)];
-    }
-
-    // 中等
-    if ((e != null && e <= 2) && (n != null && n <= 2)) {
-      var okays = [
-        '今天已经很努力了 🌿',
-        '一步一步来，你做得很好 💛',
-        '记录完成，好好休息吧 ☺️'
-      ];
-      return okays[Math.floor(Math.random() * okays.length)];
-    }
-
-    // 状态辛苦
-    var toughs = [
-      '辛苦了，记下来就是对自己最好的关爱 💗',
-      '今天很不容易，明天会好一点的 🌅',
-      '撑过去就好了，我们都在 🤗'
-    ];
-    return toughs[Math.floor(Math.random() * toughs.length)];
+    var e = log.energy != null ? log.energy : 0;
+    var n = log.nausea != null ? log.nausea : 0;
+    if (e >= 3 || n >= 3) return '今天辛苦了，好好休息 💕';
+    if (e >= 2 || n >= 2) return '再坚持一下，明天会好一些';
+    return '状态不错，继续保持 👍';
   },
 
   _loadData: function () {
@@ -140,12 +109,9 @@ Page({
       var cycle = results[0];
       var todayLog = results[1];
 
-      var cycleNo = 0, cycleDay = 0, lengthDays = 21;
-      if (cycle) {
-        cycleNo = cycle.cycle_no;
-        cycleDay = cycle.current_day || 0;
-        lengthDays = cycle.length_days || 21;
-      }
+      var cycleNo = cycle ? cycle.cycle_no : 0;
+      var cycleDay = cycle ? cycle.current_day : 0;
+      var lengthDays = cycle ? cycle.length_days : 21;
 
       var greetingText = that._getGreeting(cycleDay, lengthDays);
       var cycleDayLabel = that._getCycleDayLabel(cycleDay, lengthDays);
@@ -159,7 +125,6 @@ Page({
         statusEmoji = util.getStatusEmoji(todayLog.energy, todayLog.nausea);
 
         if (that.data.isPatient) {
-          // 患者端：不显示数值，只显示鼓励
           statusText = '今天已记录 ✅';
           encourageText = that._getEncouragement(todayLog);
         } else {
@@ -175,8 +140,11 @@ Page({
         encourageText: encourageText,
         loading: false
       });
+
+      that._loaded = true;
     }).catch(function () {
       that.setData({ loading: false });
+      that._loaded = true;
     });
   },
 
@@ -211,6 +179,8 @@ Page({
       temp_c: temp,
       is_tough_day: true
     }).then(function () {
+      wx.setStorageSync('careline_dirty', '1');
+      that._loaded = false; // 强制本页也刷新
       wx.showToast({ title: '已记录 ✅', icon: 'success' });
       that.setData({ showQuickTemp: false });
       that._loadData();
