@@ -1,9 +1,14 @@
 /**
- * CareLine API Client for 微信小程序 (修复版)
+ * CareLine API Client for 微信小程序
+ * 已切换为域名访问
  */
 
-// ⚠️ 部署后改为你的域名
-var API_BASE = 'http://111.229.254.50:8002';
+// ─── 环境配置 ───
+// 生产环境
+var API_BASE = 'https://tbowo.top/careline/api';
+
+// 测试环境（开发调试时切换到这行）
+// var API_BASE = 'https://tbowo.top/careline-test/api';
 
 function getToken() {
   return wx.getStorageSync('careline_token') || '';
