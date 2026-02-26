@@ -56,23 +56,24 @@ Page({
     this.setData({ saved: false, saving: false });
 
     var dirty = wx.getStorageSync('careline_dirty');
+
+    // 正在填表单时，只处理排便增量，不重置表单
+    if (this._loaded && this.data.confirmMode === 'confirmed') {
+        var stoolAdded = wx.getStorageSync('careline_stool_added');
+        if (stoolAdded) {
+            wx.removeStorageSync('careline_stool_added');
+            wx.removeStorageSync('careline_dirty');
+            this.setData({ stoolCount: this.data.stoolCount + 1 });
+        }
+        return;
+    }
+
     if (!dirty && this._loaded) {
-      return;
+        return;
     }
     wx.removeStorageSync('careline_dirty');
+    wx.removeStorageSync('careline_stool_added');
 
-    // 如果用户正在填写表单，只刷新排便次数，不重置表单
-    if (this._loaded && this.data.confirmMode === 'confirmed') {
-      var that = this;
-      api.getTodayStool().then(function (res) {
-        if (res && res.count != null) {
-          that.setData({ stoolCount: res.count });
-        }
-      }).catch(function () {});
-      return;
-    }
-
-    // 首次加载或未进入表单 → 完整加载
     this.setData({ confirmMode: '' });
     this._loadExisting();
   },

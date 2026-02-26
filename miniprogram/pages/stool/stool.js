@@ -35,6 +35,7 @@ Page({
       tenesmus: that.data.tenesmus
     }).then(function () {
       wx.setStorageSync('careline_dirty', '1');
+      wx.setStorageSync('careline_stool_added', '1');
       wx.showToast({ title: '已记录', icon: 'success' });
       setTimeout(function () {
         wx.navigateBack({ fail: function () { wx.switchTab({ url: '/pages/home/home' }); } });
