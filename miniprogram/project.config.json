@@ -27,8 +27,8 @@
   },
   "appid": "wx0bf66039a3c3ca79",
   "projectname": "careline",
-  "description": "CareLine 化疗副作用管理",
-  "libVersion": "3.3.4",
+  "description": "CareLine 个人健康记录与家庭关怀助手",
+  "libVersion": "3.14.2",
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [],

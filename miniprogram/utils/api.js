@@ -5,10 +5,10 @@
 
 // ─── 环境配置 ───
 // 生产环境
-// var API_BASE = 'https://tbowo.top/careline/api';
+var API_BASE = 'https://tbowo.top/careline/api';
 
 // 测试环境（开发调试时切换到这行）
-var API_BASE = 'https://tbowo.top/careline-test/api';
+// var API_BASE = 'https://tbowo.top/careline-test/api';
 
 function getToken() {
   return wx.getStorageSync('careline_token') || '';
@@ -51,11 +51,11 @@ module.exports = {
   loginByPhone: function (phone, password) {
     return request('/auth/login', { method: 'POST', data: { phone: phone, password: password } });
   },
-  createFamily: function (name, nickname) {
-    return request('/family/create', { method: 'POST', data: { name: name, nickname: nickname } });
+  createFamily: function (name) {
+      return request('/family/create', { method: 'POST', data: { name: name } });
   },
-  joinFamily: function (inviteCode, role, nickname) {
-    return request('/family/join', { method: 'POST', data: { invite_code: inviteCode, role: role, nickname: nickname } });
+  joinFamily: function (inviteCode, role) {
+      return request('/family/join', { method: 'POST', data: { invite_code: inviteCode, role: role } });
   },
   getMyFamily: function () { return request('/family/me'); },
 

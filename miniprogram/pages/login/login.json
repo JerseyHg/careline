@@ -1,6 +1,5 @@
 {
   "navigationBarTitleText": "登录",
   "navigationStyle": "custom",
-  "usingComponents": {},
-  "__usePrivacyCheck__": true
+  "usingComponents": {}
 }

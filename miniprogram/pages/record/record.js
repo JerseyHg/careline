@@ -55,15 +55,24 @@ Page({
 
     this.setData({ saved: false, saving: false });
 
-    // 脏标记检查：没有数据变化且已加载过 → 跳过请求，恢复上次状态
     var dirty = wx.getStorageSync('careline_dirty');
     if (!dirty && this._loaded) {
-      // 不重置 confirmMode，保持上次的表单状态
       return;
     }
     wx.removeStorageSync('careline_dirty');
 
-    // 有变化或首次加载 → 重置并重新请求
+    // 如果用户正在填写表单，只刷新排便次数，不重置表单
+    if (this._loaded && this.data.confirmMode === 'confirmed') {
+      var that = this;
+      api.getTodayStool().then(function (res) {
+        if (res && res.count != null) {
+          that.setData({ stoolCount: res.count });
+        }
+      }).catch(function () {});
+      return;
+    }
+
+    // 首次加载或未进入表单 → 完整加载
     this.setData({ confirmMode: '' });
     this._loadExisting();
   },

@@ -104,7 +104,12 @@ Page({
 
     var query = wx.createSelectorQuery();
     query.select('#trendCanvas').fields({ node: true, size: true }).exec(function (res) {
-      if (!res || !res[0]) return;
+      // Canvas 不可用时静默降级，用户仍可看到下方数据表格
+      if (!res || !res[0] || !res[0].node) {
+        console.warn('Canvas 2D 不可用，降级为纯表格展示');
+        return;
+      }
+
       var canvas = res[0].node;
       var ctx = canvas.getContext('2d');
       var dpr = wx.getWindowInfo().pixelRatio;

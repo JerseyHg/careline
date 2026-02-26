@@ -27,7 +27,7 @@ Page({
       wx.showToast({ title: '请填写完整', icon: 'none' }); return;
     }
     that.setData({ loading: true });
-    api.createFamily(that.data.familyName, that.data.nickname).then(function (res) {
+    api.createFamily(that.data.familyName).then(function (res) {
       that._saveAndGo(res);
     }).catch(function (err) {
       wx.showToast({ title: err.message, icon: 'none' });
@@ -42,7 +42,7 @@ Page({
       wx.showToast({ title: '请填写完整', icon: 'none' }); return;
     }
     that.setData({ loading: true });
-    api.joinFamily(that.data.inviteCode, that.data.role, that.data.nickname).then(function (res) {
+    api.joinFamily(that.data.inviteCode, that.data.role).then(function (res) {
       that._saveAndGo(res);
     }).catch(function (err) {
       wx.showToast({ title: err.message, icon: 'none' });

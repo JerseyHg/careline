@@ -47,7 +47,6 @@
       }
     ]
   },
-  "__usePrivacyCheck__": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"

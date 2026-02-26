@@ -1,128 +1,130 @@
 <!-- pages/settings/settings.wxml - 修复版 -->
 <view class="settings-page">
+    <view wx:if="{{loading}}" class="loading-center">加载中...</view>
+    <view wx:else>
+      <!-- 用户信息 -->
+      <view class="card user-card">
+        <view class="user-avatar">
+          <text class="user-emoji">{{isPatient ? '🌱' : '👨‍⚕️'}}</text>
+        </view>
+        <view class="user-info">
+          <text class="user-name">{{nickname || '用户'}}</text>
+          <!-- 修复5：不用"患者"这种消极词 -->
+          <text class="user-role">{{isPatient ? '记录本人' : '家属 / 照护者'}}</text>
+        </view>
+      </view>
 
-  <!-- 用户信息 -->
-  <view class="card user-card">
-    <view class="user-avatar">
-      <text class="user-emoji">{{isPatient ? '🌱' : '👨‍⚕️'}}</text>
-    </view>
-    <view class="user-info">
-      <text class="user-name">{{nickname || '用户'}}</text>
-      <!-- 修复5：不用"患者"这种消极词 -->
-      <text class="user-role">{{isPatient ? '记录本人' : '家属 / 照护者'}}</text>
-    </view>
-  </view>
+      <!-- 当前疗程 -->
+      <view class="card">
+        <text class="section-title">💊 当前疗程</text>
+        <view wx:if="{{cycleNo > 0}}" class="cycle-info">
+          <text class="cycle-text">第{{cycleNo}}疗程 · Day {{cycleDay}}</text>
+          <text class="cycle-start">开始日期: {{startDate}} · 周期{{lengthDays}}天</text>
+        </view>
+        <text wx:else class="empty-hint">暂无疗程</text>
 
-  <!-- 当前疗程 -->
-  <view class="card">
-    <text class="section-title">💊 当前疗程</text>
-    <view wx:if="{{cycleNo > 0}}" class="cycle-info">
-      <text class="cycle-text">第{{cycleNo}}疗程 · Day {{cycleDay}}</text>
-      <text class="cycle-start">开始日期: {{startDate}} · 周期{{lengthDays}}天</text>
-    </view>
-    <text wx:else class="empty-hint">暂无疗程</text>
-
-    <!-- 编辑当前疗程 -->
-    <view wx:if="{{cycleNo > 0 && !showNewCycle}}">
-      <view wx:if="{{!showEditCycle}}">
-        <view class="cycle-actions">
-          <view class="cycle-action-btn" bindtap="toggleEditCycle">
-            <text>✏️ 修改日期</text>
+        <!-- 编辑当前疗程 -->
+        <view wx:if="{{cycleNo > 0 && !showNewCycle}}">
+          <view wx:if="{{!showEditCycle}}">
+            <view class="cycle-actions">
+              <view class="cycle-action-btn" bindtap="toggleEditCycle">
+                <text>✏️ 修改日期</text>
+              </view>
+              <view class="cycle-action-btn" bindtap="toggleNewCycle">
+                <text>➕ 下一疗程</text>
+              </view>
+            </view>
           </view>
-          <view class="cycle-action-btn" bindtap="toggleNewCycle">
-            <text>➕ 下一疗程</text>
+          <view wx:else class="edit-form">
+            <view class="input-group">
+              <text class="input-label">开始日期</text>
+              <picker mode="date" value="{{editStartDate}}" bindchange="onEditStartDateChange">
+                <view class="input-field picker-field">{{editStartDate || '选择日期'}}</view>
+              </picker>
+            </view>
+            <view class="input-group">
+              <text class="input-label">周期天数</text>
+              <input type="number" value="{{editLengthDays}}" bindinput="onEditLengthDaysInput" class="input-field" placeholder="21" />
+            </view>
+            <button class="btn-primary" bindtap="onSaveEditCycle">保存修改</button>
+            <button class="btn-outline" bindtap="toggleEditCycle" style="margin-top: 12rpx;">取消</button>
+          </view>
+        </view>
+
+        <!-- 新建疗程 -->
+        <view wx:if="{{cycleNo === 0 && !showNewCycle}}">
+          <button class="btn-primary" bindtap="toggleNewCycle">+ 创建疗程</button>
+        </view>
+        <view wx:if="{{showNewCycle}}" class="edit-form">
+          <view class="input-group">
+            <text class="input-label">第几疗程</text>
+            <input type="number" value="{{newCycleNo}}" bindinput="onNewCycleNoInput" class="input-field" placeholder="例如: 6" />
+          </view>
+          <view class="input-group">
+            <text class="input-label">开始日期</text>
+            <picker mode="date" value="{{newStartDate}}" bindchange="onNewStartDateChange">
+              <view class="input-field picker-field">{{newStartDate || '选择日期'}}</view>
+            </picker>
+          </view>
+          <button class="btn-primary" bindtap="onCreateCycle">创建</button>
+          <button class="btn-outline" bindtap="toggleNewCycle" style="margin-top: 12rpx;">取消</button>
+        </view>
+      </view>
+
+      <!-- 历史疗程（所有角色可见） -->
+      <view class="card" wx:if="{{allCycles.length > 1}}">
+        <view class="history-header" bindtap="toggleHistory">
+          <text class="section-title">📂 历史疗程</text>
+          <text class="history-arrow {{showHistory ? 'open' : ''}}">›</text>
+        </view>
+
+        <view wx:if="{{showHistory}}" class="history-list">
+          <view
+            wx:for="{{allCycles}}" wx:key="cycle_no"
+            class="history-item {{item.is_active ? 'active' : ''}}"
+          >
+            <view class="history-info">
+              <view class="history-top">
+                <text class="history-name">第{{item.cycle_no}}疗程</text>
+                <text wx:if="{{item.is_active}}" class="history-badge">当前</text>
+              </view>
+              <text class="history-date">{{item.start_date}} · {{item.length_days}}天</text>
+              <text wx:if="{{item.current_day && item.is_active}}" class="history-day">Day {{item.current_day}}</text>
+            </view>
+            <view
+              wx:if="{{!item.is_active}}"
+              class="history-action"
+              data-no="{{item.cycle_no}}"
+              bindtap="switchToCycle"
+            >
+              <text class="history-action-text">切换</text>
+            </view>
           </view>
         </view>
       </view>
-      <view wx:else class="edit-form">
-        <view class="input-group">
-          <text class="input-label">开始日期</text>
-          <picker mode="date" value="{{editStartDate}}" bindchange="onEditStartDateChange">
-            <view class="input-field picker-field">{{editStartDate || '选择日期'}}</view>
-          </picker>
-        </view>
-        <view class="input-group">
-          <text class="input-label">周期天数</text>
-          <input type="number" value="{{editLengthDays}}" bindinput="onEditLengthDaysInput" class="input-field" placeholder="21" />
-        </view>
-        <button class="btn-primary" bindtap="onSaveEditCycle">保存修改</button>
-        <button class="btn-outline" bindtap="toggleEditCycle" style="margin-top: 12rpx;">取消</button>
-      </view>
-    </view>
 
-    <!-- 新建疗程 -->
-    <view wx:if="{{cycleNo === 0 && !showNewCycle}}">
-      <button class="btn-primary" bindtap="toggleNewCycle">+ 创建疗程</button>
-    </view>
-    <view wx:if="{{showNewCycle}}" class="edit-form">
-      <view class="input-group">
-        <text class="input-label">第几疗程</text>
-        <input type="number" value="{{newCycleNo}}" bindinput="onNewCycleNoInput" class="input-field" placeholder="例如: 6" />
-      </view>
-      <view class="input-group">
-        <text class="input-label">开始日期</text>
-        <picker mode="date" value="{{newStartDate}}" bindchange="onNewStartDateChange">
-          <view class="input-field picker-field">{{newStartDate || '选择日期'}}</view>
-        </picker>
-      </view>
-      <button class="btn-primary" bindtap="onCreateCycle">创建</button>
-      <button class="btn-outline" bindtap="toggleNewCycle" style="margin-top: 12rpx;">取消</button>
-    </view>
-  </view>
-
-  <!-- 历史疗程（所有角色可见） -->
-  <view class="card" wx:if="{{allCycles.length > 1}}">
-    <view class="history-header" bindtap="toggleHistory">
-      <text class="section-title">📂 历史疗程</text>
-      <text class="history-arrow {{showHistory ? 'open' : ''}}">›</text>
-    </view>
-
-    <view wx:if="{{showHistory}}" class="history-list">
-      <view
-        wx:for="{{allCycles}}" wx:key="cycle_no"
-        class="history-item {{item.is_active ? 'active' : ''}}"
-      >
-        <view class="history-info">
-          <view class="history-top">
-            <text class="history-name">第{{item.cycle_no}}疗程</text>
-            <text wx:if="{{item.is_active}}" class="history-badge">当前</text>
-          </view>
-          <text class="history-date">{{item.start_date}} · {{item.length_days}}天</text>
-          <text wx:if="{{item.current_day && item.is_active}}" class="history-day">Day {{item.current_day}}</text>
+      <!-- 家庭信息 -->
+      <view class="card">
+        <text class="section-title">👨‍👩‍👧 家庭</text>
+        <view class="info-row">
+          <text class="info-label">家庭名称</text>
+          <text class="info-value">{{familyName}}</text>
         </view>
-        <view
-          wx:if="{{!item.is_active}}"
-          class="history-action"
-          data-no="{{item.cycle_no}}"
-          bindtap="switchToCycle"
-        >
-          <text class="history-action-text">切换</text>
+        <view class="info-row" bindtap="copyInviteCode">
+          <text class="info-label">邀请码</text>
+          <text class="info-value invite-code">{{inviteCode}} 📋</text>
         </view>
       </view>
-    </view>
-  </view>
 
-  <!-- 家庭信息 -->
-  <view class="card">
-    <text class="section-title">👨‍👩‍👧 家庭</text>
-    <view class="info-row">
-      <text class="info-label">家庭名称</text>
-      <text class="info-value">{{familyName}}</text>
-    </view>
-    <view class="info-row" bindtap="copyInviteCode">
-      <text class="info-label">邀请码</text>
-      <text class="info-value invite-code">{{inviteCode}} 📋</text>
-    </view>
-  </view>
+      <!-- 快捷入口（家属） -->
+      <view class="card" wx:if="{{!isPatient}}">
+        <view class="menu-item" bindtap="goSummary">
+          <text>📋 就诊摘要</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
 
-  <!-- 快捷入口（家属） -->
-  <view class="card" wx:if="{{!isPatient}}">
-    <view class="menu-item" bindtap="goSummary">
-      <text>📋 就诊摘要</text>
-      <text class="menu-arrow">›</text>
+      <!-- 退出 -->
+      <button class="btn-logout" bindtap="onLogout">退出登录</button>
     </view>
-  </view>
-
-  <!-- 退出 -->
-  <button class="btn-logout" bindtap="onLogout">退出登录</button>
 </view>

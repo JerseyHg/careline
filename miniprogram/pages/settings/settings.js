@@ -4,6 +4,7 @@ var util = require('../../utils/util');
 
 Page({
   data: {
+    loading: true,
     isPatient: true,
     nickname: '',
     familyName: '',
@@ -47,26 +48,30 @@ onShow: function () {
 
   _loadData: function () {
     var that = this;
+    that.setData({ loading: true });
 
-    api.getMyFamily().then(function (res) {
-      that.setData({ familyName: res.name || '', inviteCode: res.invite_code || '' });
-    }).catch(function () {});
+    Promise.all([
+      api.getMyFamily().catch(function () { return null; }),
+      api.getCurrentCycle().catch(function () { return null; }),
+      api.listCycles().catch(function () { return []; })
+    ]).then(function (results) {
+      var family = results[0];
+      var cycle = results[1];
+      var cycles = results[2];
 
-    api.getCurrentCycle().then(function (res) {
       that.setData({
-        cycleNo: res.cycle_no || 0,
-        cycleDay: res.current_day || 0,
-        startDate: res.start_date || '',
-        lengthDays: res.length_days || 21
+        familyName: family ? (family.name || '') : '',
+        inviteCode: family ? (family.invite_code || '') : '',
+        cycleNo: cycle ? (cycle.cycle_no || 0) : 0,
+        cycleDay: cycle ? (cycle.current_day || 0) : 0,
+        startDate: cycle ? (cycle.start_date || '') : '',
+        lengthDays: cycle ? (cycle.length_days || 21) : 21,
+        allCycles: cycles || []
       });
-    }).catch(function () {});
-
-    // 所有角色都加载历史疗程
-    api.listCycles().then(function (cycles) {
-      that.setData({ allCycles: cycles || [] });
-    }).catch(function () {});
-
-    that._loaded = true;
+    }).finally(function () {
+      that.setData({ loading: false });
+      that._loaded = true;
+    });
   },
 
   // ─── 编辑当前疗程 ───
