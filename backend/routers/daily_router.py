@@ -35,24 +35,6 @@ def _get_cycle_info(db: Session, family_id: int, log_date: date):
     return cycle.cycle_no, delta
 
 
-def _sync_stool_summary(db: Session, family_id: int, log_date: date, daily_log: DailyLog):
-    """Sync stool event counts into daily log"""
-    events = (
-        db.query(StoolEvent)
-        .filter(
-            StoolEvent.family_id == family_id,
-            StoolEvent.date == log_date,
-        )
-        .all()
-    )
-
-    if events:
-        daily_log.stool_count = len(events)
-        daily_log.stool_blood_count = sum(1 for e in events if e.blood)
-        daily_log.stool_mucus_count = sum(1 for e in events if e.mucus)
-        daily_log.stool_tenesmus_count = sum(1 for e in events if e.tenesmus)
-
-
 @router.put("/{log_date}", response_model=DailyLogOut)
 def upsert_daily_log(
     log_date: date,
@@ -63,6 +45,7 @@ def upsert_daily_log(
     """
     创建或更新当天记录（Upsert）
     如果是 tough_day 模式，未填字段会用前一天数据填充
+    stool_count 直接使用前端传入的值（步进器为权威来源）
     """
     membership = get_user_family_role(db, user.id)
     if not membership:
@@ -102,7 +85,6 @@ def upsert_daily_log(
         existing.cycle_no = cycle_no
         existing.cycle_day = cycle_day
         existing.recorded_by = user.id
-        _sync_stool_summary(db, family_id, log_date, existing)
         db.commit()
         db.refresh(existing)
         return existing
@@ -117,7 +99,6 @@ def upsert_daily_log(
     )
     db.add(log)
     db.flush()
-    _sync_stool_summary(db, family_id, log_date, log)
     db.commit()
     db.refresh(log)
     return log

@@ -17,36 +17,38 @@ from tz import china_today, china_now
 router = APIRouter(prefix="/stool", tags=["排便记录"])
 
 
-def _update_daily_stool_summary(db: Session, family_id: int, event_date: date, allow_decrease: bool = False):
-    """
-    After adding/deleting a stool event, update the daily log summary.
-
-    allow_decrease=False (添加排便时): 只增不减，保护手动设的值
-    allow_decrease=True  (删除排便时): 允许减少到实际 StoolEvent 数量
-    """
-    events = (
-        db.query(StoolEvent)
-        .filter(StoolEvent.family_id == family_id, StoolEvent.date == event_date)
-        .all()
-    )
-
+def _increment_daily_stool(db: Session, family_id: int, event_date: date, event: "StoolEvent"):
+    """添加排便后：stool_count +1，更新血/粘液/里急后重计数"""
     daily = (
         db.query(DailyLog)
         .filter(DailyLog.family_id == family_id, DailyLog.date == event_date)
         .first()
     )
-
     if daily:
-        event_count = len(events)
-        if allow_decrease:
-            # 删除场景：直接用实际 StoolEvent 数量
-            daily.stool_count = event_count
-        else:
-            # 添加场景：只增不减，不覆盖手动设的更高值
-            daily.stool_count = max(daily.stool_count or 0, event_count)
-        daily.stool_blood_count = sum(1 for e in events if e.blood)
-        daily.stool_mucus_count = sum(1 for e in events if e.mucus)
-        daily.stool_tenesmus_count = sum(1 for e in events if e.tenesmus)
+        daily.stool_count = (daily.stool_count or 0) + 1
+        if event.blood:
+            daily.stool_blood_count = (daily.stool_blood_count or 0) + 1
+        if event.mucus:
+            daily.stool_mucus_count = (daily.stool_mucus_count or 0) + 1
+        if event.tenesmus:
+            daily.stool_tenesmus_count = (daily.stool_tenesmus_count or 0) + 1
+
+
+def _decrement_daily_stool(db: Session, family_id: int, event_date: date, event: "StoolEvent"):
+    """删除排便后：stool_count -1，更新血/粘液/里急后重计数"""
+    daily = (
+        db.query(DailyLog)
+        .filter(DailyLog.family_id == family_id, DailyLog.date == event_date)
+        .first()
+    )
+    if daily:
+        daily.stool_count = max(0, (daily.stool_count or 0) - 1)
+        if event.blood:
+            daily.stool_blood_count = max(0, (daily.stool_blood_count or 0) - 1)
+        if event.mucus:
+            daily.stool_mucus_count = max(0, (daily.stool_mucus_count or 0) - 1)
+        if event.tenesmus:
+            daily.stool_tenesmus_count = max(0, (daily.stool_tenesmus_count or 0) - 1)
 
 
 @router.post("", response_model=StoolEventOut)
@@ -75,8 +77,8 @@ def create_stool_event(
     db.add(event)
     db.flush()
 
-    # Update daily log summary（添加：只增不减）
-    _update_daily_stool_summary(db, membership.family_id, event_date, allow_decrease=False)
+    # stool_count +1
+    _increment_daily_stool(db, membership.family_id, event_date, event)
 
     db.commit()
     db.refresh(event)
@@ -183,9 +185,9 @@ def delete_stool_event(
         raise HTTPException(status_code=404, detail="记录不存在")
 
     event_date = event.date
+    # stool_count -1
+    _decrement_daily_stool(db, membership.family_id, event_date, event)
     db.delete(event)
-    # 删除：允许减少到实际数量
-    _update_daily_stool_summary(db, membership.family_id, event_date, allow_decrease=True)
     db.commit()
 
     return {"ok": True, "message": "已删除"}
