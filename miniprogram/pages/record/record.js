@@ -1,4 +1,4 @@
-// pages/record/record.js - 修复版：从 storage 读取快速记录标记
+// pages/record/record.js - 修复版：保留已填数据 + 体温无默认值
 var api = require('../../utils/api');
 var util = require('../../utils/util');
 
@@ -45,7 +45,7 @@ Page({
   onShow: function () {
     wx.pageScrollTo({ scrollTop: 0, duration: 0 });
 
-    // 🔧 修复：从 storage 读取快速记录标记（因为 record 是 tabBar 页，navigateTo 传参无效）
+    // 从 storage 读取快速记录标记
     var tough = wx.getStorageSync('careline_tough_mode');
     if (tough === '1') {
       wx.removeStorageSync('careline_tough_mode');
@@ -54,14 +54,11 @@ Page({
       this.setData({ isToughDay: false });
     }
 
-    // 重置表单状态
+    // 重置保存状态（但不重置表单数据，等 _loadExisting 决定）
     this.setData({
       saved: false,
       saving: false,
-      confirmMode: '',
-      energy: -1, nausea: -1, appetite: -1, sleep: -1, diarrhea: -1,
-      fever: false, tempC: '', stoolCount: 0,
-      numbness: false, mouthSore: false, note: ''
+      confirmMode: ''
     });
 
     this._loadExisting();
@@ -72,6 +69,7 @@ Page({
     that.setData({ loading: true });
     api.getToday().then(function (log) {
       if (log) {
+        // 有已保存的记录 → 用服务器数据预填
         that.setData({ existingLog: log });
         that._prefill(log);
         if (!that.data.isPatient) {
@@ -80,6 +78,8 @@ Page({
           that.setData({ confirmMode: 'confirmed' });
         }
       } else {
+        // 没有记录 → 重置表单为空白
+        that._resetForm();
         if (!that.data.isPatient) {
           that.setData({ confirmMode: 'no_record' });
         } else {
@@ -87,9 +87,19 @@ Page({
         }
       }
     }).catch(function () {
+      that._resetForm();
       that.setData({ confirmMode: 'confirmed' });
     }).finally(function () {
       that.setData({ loading: false });
+    });
+  },
+
+  _resetForm: function () {
+    this.setData({
+      existingLog: null,
+      energy: -1, nausea: -1, appetite: -1, sleep: -1, diarrhea: -1,
+      fever: false, tempC: '', stoolCount: 0,
+      numbness: false, mouthSore: false, note: ''
     });
   },
 
