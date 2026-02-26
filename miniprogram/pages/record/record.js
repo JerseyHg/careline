@@ -45,7 +45,6 @@ Page({
   onShow: function () {
     wx.pageScrollTo({ scrollTop: 0, duration: 0 });
 
-    // 从 storage 读取快速记录标记
     var tough = wx.getStorageSync('careline_tough_mode');
     if (tough === '1') {
       wx.removeStorageSync('careline_tough_mode');
@@ -54,14 +53,18 @@ Page({
       this.setData({ isToughDay: false });
     }
 
-    // 重置保存状态
-    this.setData({ saved: false, saving: false, confirmMode: '' });
+    this.setData({ saved: false, saving: false });
 
-    // 脏标记检查：没有数据变化且已加载过 → 跳过请求
+    // 脏标记检查：没有数据变化且已加载过 → 跳过请求，恢复上次状态
     var dirty = wx.getStorageSync('careline_dirty');
-    if (!dirty && this._loaded) return;
+    if (!dirty && this._loaded) {
+      // 不重置 confirmMode，保持上次的表单状态
+      return;
+    }
     wx.removeStorageSync('careline_dirty');
 
+    // 有变化或首次加载 → 重置并重新请求
+    this.setData({ confirmMode: '' });
     this._loadExisting();
   },
 

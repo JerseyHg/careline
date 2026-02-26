@@ -35,10 +35,15 @@ Page({
     });
   },
 
-  onShow: function () {
+onShow: function () {
     wx.pageScrollTo({ scrollTop: 0, duration: 0 });
+
+    var dirty = wx.getStorageSync('careline_dirty');
+    if (!dirty && this._loaded) return;
+    wx.removeStorageSync('careline_dirty');
+
     this._loadData();
-  },
+},
 
   _loadData: function () {
     var that = this;
@@ -60,6 +65,8 @@ Page({
     api.listCycles().then(function (cycles) {
       that.setData({ allCycles: cycles || [] });
     }).catch(function () {});
+
+    that._loaded = true;
   },
 
   // ─── 编辑当前疗程 ───
