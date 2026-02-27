@@ -1,35 +1,18 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: careline
-      POSTGRES_USER: careline
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-careline_secret}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "127.0.0.1:5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U careline"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build: ./backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://careline:${DB_PASSWORD:-careline_secret}@db:5432/careline
+      DATABASE_URL: postgresql://careline:careline_prod_2026@shared-postgres:5432/careline_prod
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://tbowo.top}
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "127.0.0.1:8002:8000"
+    networks:
+      - shared-net
 
-volumes:
-  pgdata:
+networks:
+  shared-net:
+    external: true

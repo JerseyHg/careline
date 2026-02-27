@@ -1,44 +1,19 @@
-# CareLine 测试环境 - 完全隔离（独立数据库 + 独立后端）
-# 用法: docker compose -f docker-compose.test.yml up -d
-# 停止: docker compose -f docker-compose.test.yml down
-# 清除数据: docker compose -f docker-compose.test.yml down -v
-
 version: "3.8"
 
 services:
-  # ─── 测试数据库（独立实例，端口 5433 避免冲突）───
-  db-test:
-    image: postgres:16-alpine
-    container_name: careline-db-test
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: careline_test
-      POSTGRES_USER: careline
-      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:-careline_test_secret}
-    volumes:
-      - pgdata_test:/var/lib/postgresql/data
-    ports:
-      - "127.0.0.1:5434:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U careline"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ─── 测试后端（端口 8001，对应 nginx /careline-test/api/）───
   backend-test:
     container_name: careline-backend-test
     build: ./backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://careline:${TEST_DB_PASSWORD:-careline_test_secret}@db-test:5432/careline_test
+      DATABASE_URL: postgresql://careline:careline_prod_2026@shared-postgres:5432/careline_test
       JWT_SECRET: ${TEST_JWT_SECRET:-test-jwt-secret-change-me}
       CORS_ORIGINS: "https://tbowo.top,http://localhost:5173"
-    depends_on:
-      db-test:
-        condition: service_healthy
     ports:
       - "127.0.0.1:8001:8000"
+    networks:
+      - shared-net
 
-volumes:
-  pgdata_test:
+networks:
+  shared-net:
+    external: true
