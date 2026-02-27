@@ -5,10 +5,15 @@ services:
     container_name: careline-backend-test
     build: ./backend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
-      DATABASE_URL: postgresql://careline:careline_prod_2026@shared-postgres:5432/careline_test
-      JWT_SECRET: ${TEST_JWT_SECRET:-test-jwt-secret-change-me}
-      CORS_ORIGINS: "https://tbowo.top,http://localhost:5173"
+      DATABASE_URL: postgresql://careline:${DB_PASSWORD}@shared-postgres:5432/careline_test
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     ports:
       - "127.0.0.1:8001:8000"
     networks:
